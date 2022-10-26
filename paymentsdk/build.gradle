@@ -46,18 +46,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.tosspayments.sdk'
                 artifactId = 'payment'
-                version = '0.0.1'
-
-                pom {
-                    name = 'Toss Payment SDK for Android'
-                    developers {
-                        developer {
-                            id = 'kangdroid'
-                            name = 'Heesung Kang'
-                            email = 'kangdroid@toss.im'
-                        }
-                    }
-                }
+                version = '1.0.0'
             }
         }
     }
