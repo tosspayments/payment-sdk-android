@@ -57,10 +57,14 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     private fun handleOverrideUrl(requestedUri: Uri?): Boolean {
         return requestedUri?.let { uri ->
             val requestedUrl = uri.toString()
+
             val isSuccess =
                 successUri.scheme.equals(uri.scheme) && successUri.host.equals(uri.host) && successUri.path.equals(
                     uri.path
                 )
+
+            val isCanceled = "PAY_PROCESS_CANCELED".equals(uri.getQueryParameter("code"), true)
+
             val isFailed =
                 failUri.scheme.equals(uri.scheme) && failUri.host.equals(uri.host) && failUri.path.equals(
                     uri.path
@@ -78,12 +82,14 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                     )
                     true
                 } ?: false
-            } else if (isFailed) {
+            } else if (isFailed || isCanceled) {
                 callback?.run {
-                    TossPaymentResult.Fail(
-                        errorCode = uri.getQueryParameter(CONST_CODE).orEmpty(),
-                        errorMessage = uri.getQueryParameter(CONST_MESSAGE).orEmpty(),
-                        orderId = uri.getQueryParameter(CONST_ORDER_ID).orEmpty()
+                    onFailed(
+                        TossPaymentResult.Fail(
+                            errorCode = uri.getQueryParameter(CONST_CODE).orEmpty(),
+                            errorMessage = uri.getQueryParameter(CONST_MESSAGE).orEmpty(),
+                            orderId = uri.getQueryParameter(CONST_ORDER_ID).orEmpty()
+                        )
                     )
                     true
                 } ?: false
