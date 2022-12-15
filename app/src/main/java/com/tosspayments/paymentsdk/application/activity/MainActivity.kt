@@ -52,6 +52,10 @@ class MainActivity : AppCompatActivity() {
             OutlineButton(text = "상품권") {
                 startPaymentActivity(GiftCertificatePaymentActivity::class.java)
             }
+
+            OutlineButton(text = "결제위젯") {
+                startPaymentActivity(PaymentWidgetActivity::class.java)
+            }
         }
     }
 
