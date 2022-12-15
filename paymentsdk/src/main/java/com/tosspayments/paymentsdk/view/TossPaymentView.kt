@@ -1,7 +1,6 @@
 package com.tosspayments.paymentsdk.view
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -12,12 +11,12 @@ import android.webkit.*
 import android.widget.FrameLayout
 import androidx.core.widget.ContentLoadingProgressBar
 import com.tosspayments.paymentsdk.R
+import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMethod
 import org.json.JSONObject
-import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
 class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
@@ -98,7 +97,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
             ) {
                 return when (uri.scheme) {
                     "intent" -> {
-                        startSchemeIntent(requestedUrl)
+                        context.startSchemeIntent(requestedUrl)
                     }
                     else -> {
                         return try {
@@ -113,32 +112,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                 return false
             }
         } ?: false
-    }
-
-    private fun startSchemeIntent(url: String): Boolean {
-        val schemeIntent: Intent = try {
-            Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
-        } catch (e: URISyntaxException) {
-            return false
-        }
-
-        try {
-            context.startActivity(schemeIntent)
-            return true
-        } catch (e: ActivityNotFoundException) {
-            val packageName = schemeIntent.getPackage()
-
-            if (!packageName.isNullOrBlank()) {
-                context.startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("market://details?id=$packageName")
-                    )
-                )
-                return true
-            }
-        }
-        return false
     }
 
     internal inner class TossPaymentJavascriptInterface {
