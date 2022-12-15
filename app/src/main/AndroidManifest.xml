@@ -10,7 +10,60 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TossPaymentsSdk"
-        tools:targetApi="31" />
+        android:theme="@style/Theme.TossPaymentsSdkSample"
+        tools:targetApi="31" >
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.CardPaymentActivity"
+            android:label="카드결제"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".activity.AccountPaymentActivity"
+            android:label="가상계좌"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".activity.TransferPaymentActivity"
+            android:label="계좌이체"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".activity.MobilePaymentActivity"
+            android:label="휴대폰"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".activity.GiftCertificatePaymentActivity"
+            android:label="상품권"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".activity.PaymentResultActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+    </application>
 
 </manifest>
