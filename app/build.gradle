@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'com.tosspayments.paymentsdk.application'
+//    namespace 'com.tosspayments.paymentsdk.application'
     compileSdk 32
 
     defaultConfig {
