@@ -1,6 +1,7 @@
 package com.tosspayments.paymentsdk
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.tosspayments.paymentsdk.activity.TossPaymentActivity
@@ -12,12 +13,30 @@ class TossPayments(private val clientKey: String) : TossPayment {
         internal const val EXTRA_PAYMENT_INFO = "extraPaymentInfo"
         internal const val EXTRA_CLIENT_KEY = "extraClientKey"
         internal const val EXTRA_METHOD = "extraMethod"
+        internal const val EXTRA_PAYMENT_DOM = "extraPaymentDom"
 
         const val EXTRA_PAYMENT_RESULT_SUCCESS = "extraPaymentResultSuccess"
         const val EXTRA_PAYMENT_RESULT_FAILED = "extraPaymentResultFailed"
 
         const val RESULT_PAYMENT_SUCCESS: Int = 200
         const val RESULT_PAYMENT_FAILED: Int = 201
+    }
+
+    override fun requestPayment(
+        context: Context,
+        dom: String,
+        paymentResultLauncher: ActivityResultLauncher<Intent>
+    ) {
+        paymentResultLauncher.launch(
+            TossPaymentActivity.getIntent(context, dom)
+        )
+    }
+
+    override fun requestPayment(context: Context, dom: String, requestCode: Int) {
+        (context as? Activity)?.startActivityForResult(
+            TossPaymentActivity.getIntent(context, dom),
+            requestCode
+        )
     }
 
     override fun requestPayment(

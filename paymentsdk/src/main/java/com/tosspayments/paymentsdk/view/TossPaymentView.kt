@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
@@ -37,11 +38,15 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         const val CONST_MESSAGE = "message"
     }
 
-    private fun getPaymentWebViewClient(onPageFinished: () -> Unit): WebViewClient {
+    private fun getPaymentWebViewClient(onPageFinished: (WebView.() -> Unit)? = null): WebViewClient {
         return object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                onPageFinished.invoke()
+                showLoading(false)
+
+                if (onPageFinished != null) {
+                    view?.onPageFinished()
+                }
             }
 
             override fun shouldOverrideUrlLoading(
@@ -162,14 +167,21 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         requestPayment(requestPaymentScript)
     }
 
+    internal fun requestPaymentFromDom(dom: String) {
+        showLoading(true)
+
+        paymentWebView.webViewClient = getPaymentWebViewClient()
+        paymentWebView.loadData(
+            Base64.encodeToString(dom.toByteArray(), Base64.NO_PADDING),
+            "text/html",
+            "base64"
+        )
+    }
+
     private fun requestPayment(paymentInfoPayload: String) {
         showLoading(true)
 
-        paymentWebView.webViewClient = getPaymentWebViewClient {
-            paymentWebView.evaluateJavascript("javascript:$paymentInfoPayload", null)
-
-            showLoading(false)
-        }
+        paymentWebView.webViewClient = getPaymentWebViewClient()
 
         paymentWebView.loadUrl("file:///android_asset/tosspayment.html")
     }

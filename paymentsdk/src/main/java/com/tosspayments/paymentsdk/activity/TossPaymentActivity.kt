@@ -27,6 +27,11 @@ internal class TossPaymentActivity : AppCompatActivity() {
                 putExtra(TossPayments.EXTRA_PAYMENT_INFO, tossPaymentInfo.getPayload().toString())
             }
         }
+
+        internal fun getIntent(context: Context, dom: String): Intent {
+            return Intent(context, TossPaymentActivity::class.java)
+                .putExtra(TossPayments.EXTRA_PAYMENT_DOM, dom)
+        }
     }
 
     private var viewPayment: TossPaymentView? = null
@@ -79,12 +84,15 @@ internal class TossPaymentActivity : AppCompatActivity() {
             orderId = kotlin.runCatching { JSONObject(it).get("orderId").toString() }.getOrNull()
                 .orEmpty()
         }
+        val paymentDom = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_DOM)
+        val paymentCanceledMessage = "Payment has been canceled by the customer"
 
         val errorMessage = when {
+            !paymentDom.isNullOrBlank() -> paymentCanceledMessage
             methodName.isNullOrBlank() -> "Method is empty"
             clientKey.isNullOrBlank() -> "ClientKey is empty"
             paymentPayload.isNullOrBlank() -> "PaymentInfo is empty"
-            else -> "Payment has been canceled by the customer"
+            else -> paymentCanceledMessage
         }
 
         setResult(
@@ -99,11 +107,17 @@ internal class TossPaymentActivity : AppCompatActivity() {
                 )
         )
 
-        if (methodName.isNullOrBlank() || clientKey.isNullOrBlank() || paymentPayload.isNullOrBlank()) {
-            finish()
-        } else {
-            viewPayment?.requestPayment(clientKey, methodName, paymentPayload)
-                ?: kotlin.run { finish() }
+        when {
+            !paymentDom.isNullOrBlank() -> {
+                viewPayment?.requestPaymentFromDom(paymentDom) ?: kotlin.run { finish() }
+            }
+            !methodName.isNullOrBlank() && !clientKey.isNullOrBlank() && !paymentPayload.isNullOrBlank() -> {
+                viewPayment?.requestPayment(clientKey, methodName, paymentPayload)
+                    ?: kotlin.run { finish() }
+            }
+            else -> {
+                finish()
+            }
         }
     }
 }
