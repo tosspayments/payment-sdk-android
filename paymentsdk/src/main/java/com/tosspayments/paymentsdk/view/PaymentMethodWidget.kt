@@ -62,7 +62,7 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    internal inner class TossPaymentWidgetJavascriptInterface {
+    private inner class TossPaymentWidgetJavascriptInterface {
         @JavascriptInterface
         fun requestPayments(paymentDom: String) {
             paymentWidgetCallback?.onPaymentDomCreated(paymentDom)
