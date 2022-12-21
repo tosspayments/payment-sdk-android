@@ -15,6 +15,7 @@ import androidx.core.widget.ContentLoadingProgressBar
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.extension.toDp
+import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
@@ -129,6 +130,8 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
             val requestPaymentScript = "paymentWidget.requestPaymentForNativeSDK({\n" +
                     "orderId: '${orderId}',\n" +
                     "orderName: '${orderName}',\n" +
+                    "successUrl: '${TossPaymentInfo.successUri}',\n" +
+                    "failUrl: '${TossPaymentInfo.failUri}',\n" +
                     "customerEmail: '${customerEmail.orEmpty()}'," +
                     "customerName: '${customerName.orEmpty()}'" +
                     "})"
