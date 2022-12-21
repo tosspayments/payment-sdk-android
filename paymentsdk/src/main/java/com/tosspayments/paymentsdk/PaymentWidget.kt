@@ -6,7 +6,7 @@ import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
 class PaymentWidget(private val clientKey: String) {
-    private var tossPayments: TossPayments = TossPayments(clientKey)
+    private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
@@ -15,26 +15,30 @@ class PaymentWidget(private val clientKey: String) {
     private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
         return object : PaymentWidgetCallback {
             override fun onPaymentDomCreated(paymentDom: String) {
-                methodWidget?.context?.let {
-                    if (paymentDom.isNotBlank()) {
-                        when {
-                            requestCode != null -> {
-                                tossPayments.requestPayment(
-                                    it,
-                                    paymentDom,
-                                    orderId,
-                                    requestCode!!
-                                )
-                            }
-                            paymentResultLauncher != null -> {
-                                tossPayments.requestPayment(
-                                    it,
-                                    paymentDom,
-                                    orderId,
-                                    paymentResultLauncher!!
-                                )
-                            }
-                        }
+                handlePaymentDom(orderId, paymentDom)
+            }
+        }
+    }
+
+    private fun handlePaymentDom(orderId: String, paymentDom: String) {
+        methodWidget?.context?.let {
+            if (paymentDom.isNotBlank()) {
+                when {
+                    requestCode != null -> {
+                        tossPayments.requestPayment(
+                            it,
+                            paymentDom,
+                            orderId,
+                            requestCode!!
+                        )
+                    }
+                    paymentResultLauncher != null -> {
+                        tossPayments.requestPayment(
+                            it,
+                            paymentDom,
+                            orderId,
+                            paymentResultLauncher!!
+                        )
                     }
                 }
             }
@@ -70,6 +74,7 @@ class PaymentWidget(private val clientKey: String) {
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
+            throw IllegalAccessException("Payment method widget is not set")
         }
     }
 
@@ -94,6 +99,7 @@ class PaymentWidget(private val clientKey: String) {
             )
         } ?: kotlin.run {
             this.requestCode = null
+            throw IllegalAccessException("Payment method widget is not set")
         }
     }
 }

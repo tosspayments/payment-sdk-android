@@ -51,7 +51,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
-        methodWidget = findViewById(R.id.payment_widget)
+        methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget).also {
+            paymentWidget.setMethodWidget(it)
+        }
+
         paymentCta = findViewById(R.id.request_payment_cta)
 
         findViewById<EditText>(R.id.payment_amount).run {
@@ -83,8 +86,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
             setText("리팩터링 2판 외 1권")
         }
-
-        paymentWidget.setMethodWidget(methodWidget)
     }
 
     private fun bindViewModel() {
