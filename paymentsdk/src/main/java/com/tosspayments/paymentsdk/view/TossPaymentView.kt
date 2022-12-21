@@ -170,12 +170,15 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     internal fun requestPaymentFromDom(dom: String) {
         showLoading(true)
 
-        paymentWebView.webViewClient = getPaymentWebViewClient()
-        paymentWebView.loadData(
-            Base64.encodeToString(dom.toByteArray(), Base64.NO_PADDING),
-            "text/html",
-            "base64"
-        )
+        paymentWebView.run {
+            webViewClient = getPaymentWebViewClient()
+
+            loadData(
+                Base64.encodeToString(dom.toByteArray(), Base64.NO_PADDING),
+                "text/html",
+                "base64"
+            )
+        }
     }
 
     private fun requestPayment(paymentInfoPayload: String) {

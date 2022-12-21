@@ -1,5 +1,5 @@
 package com.tosspayments.paymentsdk.interfaces
 
-interface PaymentWidgetCallback {
+internal interface PaymentWidgetCallback {
     fun onPaymentDomCreated(paymentDom : String)
 }
