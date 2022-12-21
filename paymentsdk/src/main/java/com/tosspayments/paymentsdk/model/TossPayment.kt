@@ -10,12 +10,14 @@ internal interface TossPayment {
     fun requestPayment(
         context: Context,
         dom: String,
+        orderId : String,
         paymentResultLauncher: ActivityResultLauncher<Intent>
     )
 
     fun requestPayment(
         context: Context,
         dom: String,
+        orderId : String,
         requestCode: Int
     )
 

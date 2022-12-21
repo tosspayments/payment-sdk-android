@@ -28,9 +28,10 @@ internal class TossPaymentActivity : AppCompatActivity() {
             }
         }
 
-        internal fun getIntent(context: Context, dom: String): Intent {
+        internal fun getIntent(context: Context, dom: String, orderId: String): Intent {
             return Intent(context, TossPaymentActivity::class.java)
                 .putExtra(TossPayments.EXTRA_PAYMENT_DOM, dom)
+                .putExtra(TossPayments.EXTRA_ORDER_ID, orderId)
         }
     }
 
@@ -77,12 +78,15 @@ internal class TossPaymentActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        var orderId = ""
+        var orderId = intent?.getStringExtra(TossPayments.EXTRA_ORDER_ID).orEmpty()
         val clientKey = intent?.getStringExtra(TossPayments.EXTRA_CLIENT_KEY)
         val methodName = intent?.getStringExtra(TossPayments.EXTRA_METHOD)
         val paymentPayload = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_INFO)?.also {
-            orderId = kotlin.runCatching { JSONObject(it).get("orderId").toString() }.getOrNull()
-                .orEmpty()
+            if (orderId.isBlank()) {
+                orderId =
+                    kotlin.runCatching { JSONObject(it).get("orderId").toString() }.getOrNull()
+                        .orEmpty()
+            }
         }
         val paymentDom = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_DOM)
         val paymentCanceledMessage = "Payment has been canceled by the customer"
