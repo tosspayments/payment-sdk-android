@@ -110,31 +110,39 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private fun bindViewModel() {
         lifecycleScope.launch {
             viewModel.amount.collectLatest {
-                paymentWidget.renderPaymentMethodWidget(
-                    CUSTOMER_KEY,
-                    it
-                )
+                renderMethodWidget(it)
             }
         }
 
         lifecycleScope.launch {
             viewModel.uiState.collectLatest { uiState ->
-                when (uiState) {
-                    is PaymentWidgetViewModel.UiState.Invalid -> {
-                        paymentCta.isEnabled = false
-                    }
-                    is PaymentWidgetViewModel.UiState.Valid -> {
-                        paymentCta.run {
-                            isEnabled = true
+                handleUiState(uiState)
+            }
+        }
+    }
 
-                            setOnClickListener {
-                                paymentWidget.requestPayment(
-                                    paymentResultLauncher = tossPaymentActivityResult,
-                                    orderId = uiState.orderId,
-                                    orderName = uiState.orderName,
-                                )
-                            }
-                        }
+    private fun renderMethodWidget(amount : Long) {
+        paymentWidget.renderPaymentMethodWidget(
+            CUSTOMER_KEY,
+            amount
+        )
+    }
+
+    private fun handleUiState(uiState: PaymentWidgetViewModel.UiState) {
+        when (uiState) {
+            is PaymentWidgetViewModel.UiState.Invalid -> {
+                paymentCta.isEnabled = false
+            }
+            is PaymentWidgetViewModel.UiState.Valid -> {
+                paymentCta.run {
+                    isEnabled = true
+
+                    setOnClickListener {
+                        paymentWidget.requestPayment(
+                            paymentResultLauncher = tossPaymentActivityResult,
+                            orderId = uiState.orderId,
+                            orderName = uiState.orderName,
+                        )
                     }
                 }
             }

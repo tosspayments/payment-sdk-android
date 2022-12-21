@@ -18,6 +18,7 @@ class TossPayments(private val clientKey: String) : TossPayment {
         internal const val EXTRA_CLIENT_KEY = "extraClientKey"
         internal const val EXTRA_METHOD = "extraMethod"
         internal const val EXTRA_PAYMENT_DOM = "extraPaymentDom"
+        internal const val EXTRA_ORDER_ID = "extraOrderId"
 
         const val EXTRA_PAYMENT_RESULT_SUCCESS = "extraPaymentResultSuccess"
         const val EXTRA_PAYMENT_RESULT_FAILED = "extraPaymentResultFailed"
@@ -62,16 +63,17 @@ class TossPayments(private val clientKey: String) : TossPayment {
     override fun requestPayment(
         context: Context,
         dom: String,
+        orderId: String,
         paymentResultLauncher: ActivityResultLauncher<Intent>
     ) {
         paymentResultLauncher.launch(
-            TossPaymentActivity.getIntent(context, dom)
+            TossPaymentActivity.getIntent(context, dom, orderId)
         )
     }
 
-    override fun requestPayment(context: Context, dom: String, requestCode: Int) {
+    override fun requestPayment(context: Context, dom: String, orderId: String, requestCode: Int) {
         (context as? Activity)?.startActivityForResult(
-            TossPaymentActivity.getIntent(context, dom),
+            TossPaymentActivity.getIntent(context, dom, orderId),
             requestCode
         )
     }

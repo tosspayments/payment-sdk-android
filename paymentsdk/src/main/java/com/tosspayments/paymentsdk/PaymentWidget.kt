@@ -12,8 +12,8 @@ class PaymentWidget(private val clientKey: String) {
     private var requestCode: Int? = null
     private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
-    private val paymentWidgetCallback: PaymentWidgetCallback
-        get() = object : PaymentWidgetCallback {
+    private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
+        return object : PaymentWidgetCallback {
             override fun onPaymentDomCreated(paymentDom: String) {
                 methodWidget?.context?.let {
                     if (paymentDom.isNotBlank()) {
@@ -22,6 +22,7 @@ class PaymentWidget(private val clientKey: String) {
                                 tossPayments.requestPayment(
                                     it,
                                     paymentDom,
+                                    orderId,
                                     requestCode!!
                                 )
                             }
@@ -29,6 +30,7 @@ class PaymentWidget(private val clientKey: String) {
                                 tossPayments.requestPayment(
                                     it,
                                     paymentDom,
+                                    orderId,
                                     paymentResultLauncher!!
                                 )
                             }
@@ -37,6 +39,7 @@ class PaymentWidget(private val clientKey: String) {
                 }
             }
         }
+    }
 
     fun setMethodWidget(methodWidget: PaymentMethodWidget) {
         this.methodWidget = methodWidget
@@ -63,7 +66,7 @@ class PaymentWidget(private val clientKey: String) {
                 orderName,
                 customerEmail,
                 customerName,
-                paymentWidgetCallback
+                getPaymentWidgetCallback(orderId)
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
@@ -87,7 +90,7 @@ class PaymentWidget(private val clientKey: String) {
                 orderName,
                 customerEmail,
                 customerName,
-                paymentWidgetCallback
+                getPaymentWidgetCallback(orderId)
             )
         } ?: kotlin.run {
             this.requestCode = null
