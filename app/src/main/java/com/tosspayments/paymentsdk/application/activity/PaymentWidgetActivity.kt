@@ -16,7 +16,10 @@ import com.tosspayments.paymentsdk.application.R
 import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
@@ -88,9 +91,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(FlowPreview::class)
     private fun bindViewModel() {
         lifecycleScope.launch {
-            viewModel.amount.collectLatest {
+            viewModel.amount.debounce(300).distinctUntilChanged().collectLatest {
                 renderMethodWidget(it)
             }
         }
