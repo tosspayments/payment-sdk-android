@@ -24,7 +24,26 @@
                 style="@style/Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Amount"
+                android:textColor="@color/black"
+                tools:ignore="HardcodedText" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/payment_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/selector_edittext"
+                android:padding="10dp"
+                android:textColor="@color/black" />
+
+            <TextView
+                style="@style/Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="OrderId"
+                android:layout_marginTop="12dp"
                 android:textColor="@color/black"
                 tools:ignore="HardcodedText" />
 
