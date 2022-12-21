@@ -24,7 +24,7 @@
                 style="@style/Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Amount"
+                android:text="금액"
                 android:textColor="@color/black"
                 tools:ignore="HardcodedText" />
 
@@ -32,9 +32,9 @@
                 android:id="@+id/payment_amount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/selector_edittext"
+                android:inputType="numberDecimal"
                 android:padding="10dp"
                 android:textColor="@color/black" />
 
@@ -42,8 +42,8 @@
                 style="@style/Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="OrderId"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="18dp"
+                android:text="주문 ID"
                 android:textColor="@color/black"
                 tools:ignore="HardcodedText" />
 
@@ -60,8 +60,8 @@
                 style="@style/Label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="OrderName"
+                android:layout_marginTop="18dp"
+                android:text="주문명"
                 android:textColor="@color/black"
                 tools:ignore="HardcodedText" />
 
@@ -74,11 +74,20 @@
                 android:padding="10dp"
                 android:textColor="@color/black" />
 
+            <TextView
+                style="@style/Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="결제수단"
+                android:textColor="@color/black"
+                tools:ignore="HardcodedText" />
+
             <com.tosspayments.paymentsdk.view.PaymentMethodWidget
                 android:id="@+id/payment_widget"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" />
+                android:layout_marginTop="8dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
@@ -90,9 +99,10 @@
         android:layout_marginRight="24dp"
         android:layout_marginBottom="24dp"
         android:background="@drawable/selector_rounded_cta"
-        android:text="확인"
-        android:textSize="16sp"
+        android:minHeight="56dp"
+        android:text="결제하기"
         android:textColor="@color/white"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
