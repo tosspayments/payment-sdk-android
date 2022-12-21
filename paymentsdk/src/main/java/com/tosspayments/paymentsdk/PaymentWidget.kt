@@ -1,7 +1,6 @@
 package com.tosspayments.paymentsdk
 
 import android.content.Intent
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
@@ -24,8 +23,6 @@ class PaymentWidget(private val clientKey: String) {
     private fun handlePaymentDom(orderId: String, paymentDom: String) {
         methodWidget?.context?.let {
             if (paymentDom.isNotBlank()) {
-                Log.d("Kangdroid", paymentDom)
-
                 when {
                     requestCode != null -> {
                         tossPayments.requestPayment(
