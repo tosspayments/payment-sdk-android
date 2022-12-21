@@ -14,17 +14,17 @@ import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.application.R
 import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetViewModel by viewModels()
+    private val paymentWidget = PaymentWidget(CLIENT_KEY)
 
     private lateinit var methodWidget: PaymentMethodWidget
     private lateinit var paymentCta: Button
-
-    private val paymentWidget = PaymentWidget(CLIENT_KEY)
 
     companion object {
         private const val CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq"
@@ -35,30 +35,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
         TossPayments.getPaymentResultLauncher(
             this,
             { success ->
-                startActivity(
-                    PaymentResultActivity.getIntent(
-                        this@PaymentWidgetActivity,
-                        true,
-                        arrayListOf(
-                            "PaymentKey|${success.paymentKey}",
-                            "OrderId|${success.orderId}",
-                            "Amount|${success.amount}"
-                        )
-                    )
-                )
+                handlePaymentSuccessResult(success)
             },
             { fail ->
-                startActivity(
-                    PaymentResultActivity.getIntent(
-                        this@PaymentWidgetActivity,
-                        false,
-                        arrayListOf(
-                            "ErrorCode|${fail.errorCode}",
-                            "ErrorMessage|${fail.errorMessage}",
-                            "OrderId|${fail.orderId}"
-                        )
-                    )
-                )
+                handlePaymentFailResult(fail)
             })
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +54,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         methodWidget = findViewById(R.id.payment_widget)
         paymentCta = findViewById(R.id.request_payment_cta)
 
-        findViewById<EditText>(R.id.payment_amount).apply {
+        findViewById<EditText>(R.id.payment_amount).run {
             addTextChangedListener {
                 viewModel.setAmount(
                     try {
@@ -88,7 +68,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             setText("50000")
         }
 
-        findViewById<EditText>(R.id.payment_order_Id).apply {
+        findViewById<EditText>(R.id.payment_order_Id).run {
             addTextChangedListener {
                 viewModel.setOrderId(it.toString())
             }
@@ -96,7 +76,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             setText("AD8aZDpbzXs4EQa")
         }
 
-        findViewById<EditText>(R.id.payment_order_name).apply {
+        findViewById<EditText>(R.id.payment_order_name).run {
             addTextChangedListener {
                 viewModel.setOrderName(it.toString())
             }
@@ -121,7 +101,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
     }
 
-    private fun renderMethodWidget(amount : Long) {
+    private fun renderMethodWidget(amount: Long) {
         paymentWidget.renderPaymentMethodWidget(
             CUSTOMER_KEY,
             amount
@@ -147,5 +127,33 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun handlePaymentSuccessResult(success: TossPaymentResult.Success) {
+        startActivity(
+            PaymentResultActivity.getIntent(
+                this@PaymentWidgetActivity,
+                true,
+                arrayListOf(
+                    "PaymentKey|${success.paymentKey}",
+                    "OrderId|${success.orderId}",
+                    "Amount|${success.amount}"
+                )
+            )
+        )
+    }
+
+    private fun handlePaymentFailResult(fail: TossPaymentResult.Fail) {
+        startActivity(
+            PaymentResultActivity.getIntent(
+                this@PaymentWidgetActivity,
+                false,
+                arrayListOf(
+                    "ErrorCode|${fail.errorCode}",
+                    "ErrorMessage|${fail.errorMessage}",
+                    "OrderId|${fail.orderId}"
+                )
+            )
+        )
     }
 }

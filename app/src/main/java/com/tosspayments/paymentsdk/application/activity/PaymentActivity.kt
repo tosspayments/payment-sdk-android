@@ -20,6 +20,7 @@ import com.tosspayments.paymentsdk.application.composable.CtaButton
 import com.tosspayments.paymentsdk.application.composable.PaymentInfoInput
 import com.tosspayments.paymentsdk.application.model.PaymentUiState
 import com.tosspayments.paymentsdk.application.viewmodel.BasePaymentViewModel
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 
 abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
@@ -27,30 +28,10 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
         TossPayments.getPaymentResultLauncher(
             this,
             { success ->
-                startActivity(
-                    PaymentResultActivity.getIntent(
-                        this@PaymentActivity,
-                        true,
-                        arrayListOf(
-                            "PaymentKey|${success.paymentKey}",
-                            "OrderId|${success.orderId}",
-                            "Amount|${success.amount}"
-                        )
-                    )
-                )
+                handlePaymentSuccessResult(success)
             },
             { fail ->
-                startActivity(
-                    PaymentResultActivity.getIntent(
-                        this@PaymentActivity,
-                        false,
-                        arrayListOf(
-                            "ErrorCode|${fail.errorCode}",
-                            "ErrorMessage|${fail.errorMessage}",
-                            "OrderId|${fail.orderId}"
-                        )
-                    )
-                )
+                handlePaymentFailResult(fail)
             })
 
     abstract val viewModel: BasePaymentViewModel<K>
@@ -193,5 +174,33 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
                 viewModel.requestPayment(this@PaymentActivity, tossPaymentActivityResult)
             }
         }
+    }
+
+    private fun handlePaymentSuccessResult(success: TossPaymentResult.Success) {
+        startActivity(
+            PaymentResultActivity.getIntent(
+                this@PaymentActivity,
+                true,
+                arrayListOf(
+                    "PaymentKey|${success.paymentKey}",
+                    "OrderId|${success.orderId}",
+                    "Amount|${success.amount}"
+                )
+            )
+        )
+    }
+
+    private fun handlePaymentFailResult(fail: TossPaymentResult.Fail) {
+        startActivity(
+            PaymentResultActivity.getIntent(
+                this@PaymentActivity,
+                false,
+                arrayListOf(
+                    "ErrorCode|${fail.errorCode}",
+                    "ErrorMessage|${fail.errorMessage}",
+                    "OrderId|${fail.orderId}"
+                )
+            )
+        )
     }
 }
