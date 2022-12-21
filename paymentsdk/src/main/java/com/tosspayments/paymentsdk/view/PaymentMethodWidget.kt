@@ -5,14 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.widget.ContentLoadingProgressBar
 import com.tosspayments.paymentsdk.R
+import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.extension.toDp
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
@@ -25,6 +26,8 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     private val paymentWebView: WebView
 
     private var methodRenderCalled: Boolean = false
+    private var requestCode: Int? = null
+    private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
@@ -51,10 +54,29 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
+    private var tossPayments: TossPayments? = null
+
     internal inner class TossPaymentWidgetJavascriptInterface {
         @JavascriptInterface
         fun requestPayments(payload: String) {
-            Log.d("Kangdroid", "requestPayments payload : $payload")
+            if (payload.isNotBlank()) {
+                when {
+                    requestCode != null -> {
+                        tossPayments?.requestPayment(
+                            context,
+                            payload,
+                            requestCode!!
+                        )
+                    }
+                    paymentResultLauncher != null -> {
+                        tossPayments?.requestPayment(
+                            context,
+                            payload,
+                            paymentResultLauncher!!
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -105,6 +127,8 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     }
 
     fun renderPaymentMethods(clientKey: String, customerKey: String, amount: Long) {
+        tossPayments = TossPayments(clientKey)
+
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = PaymentWidget('$clientKey', '$customerKey');")
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
@@ -121,10 +145,36 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     @JvmOverloads
     @Throws(IllegalAccessException::class)
     fun requestPayment(
+        paymentResultLauncher: ActivityResultLauncher<Intent>,
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null
+        customerName: String? = null,
+    ) {
+        this.paymentResultLauncher = paymentResultLauncher
+        requestPayment(orderId, orderName, customerEmail, customerName)
+    }
+
+    @JvmOverloads
+    @Throws(IllegalAccessException::class)
+    fun requestPayment(
+        requestCode: Int,
+        orderId: String,
+        orderName: String,
+        customerEmail: String? = null,
+        customerName: String? = null,
+    ) {
+        this.requestCode = requestCode
+        requestPayment(orderId, orderName, customerEmail, customerName)
+    }
+
+    @JvmOverloads
+    @Throws(IllegalAccessException::class)
+    private fun requestPayment(
+        orderId: String,
+        orderName: String,
+        customerEmail: String? = null,
+        customerName: String? = null,
     ) {
         if (methodRenderCalled) {
             val requestPaymentScript = "paymentWidget.requestPaymentForNativeSDK({\n" +

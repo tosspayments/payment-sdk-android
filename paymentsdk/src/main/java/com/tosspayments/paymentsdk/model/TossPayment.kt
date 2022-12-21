@@ -1,11 +1,24 @@
 package com.tosspayments.paymentsdk.model
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import com.tosspayments.paymentsdk.model.paymentinfo.*
 
 internal interface TossPayment {
+    fun requestPayment(
+        context: Context,
+        dom: String,
+        paymentResultLauncher: ActivityResultLauncher<Intent>
+    )
+
+    fun requestPayment(
+        context: Context,
+        dom: String,
+        requestCode: Int
+    )
+
     fun requestPayment(
         activity: Activity,
         method: TossPaymentMethod,

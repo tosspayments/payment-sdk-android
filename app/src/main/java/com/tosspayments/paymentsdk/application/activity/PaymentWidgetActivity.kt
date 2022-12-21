@@ -1,18 +1,22 @@
 package com.tosspayments.paymentsdk.application.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
+import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.application.R
 import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
@@ -20,6 +24,45 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     private lateinit var paymentWidget: PaymentMethodWidget
     private lateinit var paymentCta: Button
+
+    private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            when (result.resultCode) {
+                TossPayments.RESULT_PAYMENT_SUCCESS -> {
+                    result.data?.getParcelableExtra<TossPaymentResult.Success>(TossPayments.EXTRA_PAYMENT_RESULT_SUCCESS)
+                        ?.let { success ->
+                            startActivity(
+                                PaymentResultActivity.getIntent(
+                                    this@PaymentWidgetActivity,
+                                    true,
+                                    arrayListOf(
+                                        "PaymentKey|${success.paymentKey}",
+                                        "OrderId|${success.orderId}",
+                                        "Amount|${success.amount}"
+                                    )
+                                )
+                            )
+                        }
+                }
+                TossPayments.RESULT_PAYMENT_FAILED -> {
+                    result.data?.getParcelableExtra<TossPaymentResult.Fail>(TossPayments.EXTRA_PAYMENT_RESULT_FAILED)
+                        ?.let { fail ->
+                            startActivity(
+                                PaymentResultActivity.getIntent(
+                                    this@PaymentWidgetActivity,
+                                    false,
+                                    arrayListOf(
+                                        "ErrorCode|${fail.errorCode}",
+                                        "ErrorMessage|${fail.errorMessage}",
+                                        "OrderId|${fail.orderId}"
+                                    )
+                                )
+                            )
+                        }
+                }
+                else -> {}
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +120,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.uiState.collectLatest {uiState ->
-                when(uiState) {
+            viewModel.uiState.collectLatest { uiState ->
+                when (uiState) {
                     is PaymentWidgetViewModel.UiState.Invalid -> {
                         paymentCta.isEnabled = false
                     }
@@ -87,7 +130,11 @@ class PaymentWidgetActivity : AppCompatActivity() {
                             isEnabled = true
 
                             setOnClickListener {
-                                paymentWidget.requestPayment(uiState.orderId, uiState.orderName)
+                                paymentWidget.requestPayment(
+                                    paymentResultLauncher = tossPaymentActivityResult,
+                                    orderId = uiState.orderId,
+                                    orderName = uiState.orderName,
+                                )
                             }
                         }
                     }
