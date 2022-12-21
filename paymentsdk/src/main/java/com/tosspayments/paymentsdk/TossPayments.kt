@@ -3,9 +3,13 @@ package com.tosspayments.paymentsdk
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentActivity
 import com.tosspayments.paymentsdk.model.TossPayment
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.*
 
 class TossPayments(private val clientKey: String) : TossPayment {
@@ -20,6 +24,39 @@ class TossPayments(private val clientKey: String) : TossPayment {
 
         const val RESULT_PAYMENT_SUCCESS: Int = 200
         const val RESULT_PAYMENT_FAILED: Int = 201
+
+        fun getPaymentResultLauncher(
+            activity: AppCompatActivity, onSuccess: (TossPaymentResult.Success) -> Unit,
+            onFailed: (TossPaymentResult.Fail) -> Unit
+        ): ActivityResultLauncher<Intent> {
+            return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                handlePaymentResult(result, onSuccess, onFailed)
+            }
+        }
+
+        private fun handlePaymentResult(
+            result: ActivityResult,
+            onSuccess: (TossPaymentResult.Success) -> Unit,
+            onFailed: (TossPaymentResult.Fail) -> Unit
+        ) {
+            when (result.resultCode) {
+                RESULT_PAYMENT_SUCCESS -> {
+                    result.data?.getParcelableExtra<TossPaymentResult.Success>(
+                        EXTRA_PAYMENT_RESULT_SUCCESS
+                    )?.let { success ->
+                        onSuccess.invoke(success)
+                    }
+                }
+                RESULT_PAYMENT_FAILED -> {
+                    result.data?.getParcelableExtra<TossPaymentResult.Fail>(
+                        EXTRA_PAYMENT_RESULT_FAILED
+                    )?.let { fail ->
+                        onFailed.invoke(fail)
+                    }
+                }
+                else -> {}
+            }
+        }
     }
 
     override fun requestPayment(

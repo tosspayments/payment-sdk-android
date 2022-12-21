@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
@@ -15,7 +14,6 @@ import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.application.R
 import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
-import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -34,43 +32,34 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            when (result.resultCode) {
-                TossPayments.RESULT_PAYMENT_SUCCESS -> {
-                    result.data?.getParcelableExtra<TossPaymentResult.Success>(TossPayments.EXTRA_PAYMENT_RESULT_SUCCESS)
-                        ?.let { success ->
-                            startActivity(
-                                PaymentResultActivity.getIntent(
-                                    this@PaymentWidgetActivity,
-                                    true,
-                                    arrayListOf(
-                                        "PaymentKey|${success.paymentKey}",
-                                        "OrderId|${success.orderId}",
-                                        "Amount|${success.amount}"
-                                    )
-                                )
-                            )
-                        }
-                }
-                TossPayments.RESULT_PAYMENT_FAILED -> {
-                    result.data?.getParcelableExtra<TossPaymentResult.Fail>(TossPayments.EXTRA_PAYMENT_RESULT_FAILED)
-                        ?.let { fail ->
-                            startActivity(
-                                PaymentResultActivity.getIntent(
-                                    this@PaymentWidgetActivity,
-                                    false,
-                                    arrayListOf(
-                                        "ErrorCode|${fail.errorCode}",
-                                        "ErrorMessage|${fail.errorMessage}",
-                                        "OrderId|${fail.orderId}"
-                                    )
-                                )
-                            )
-                        }
-                }
-                else -> {}
-            }
-        }
+        TossPayments.getPaymentResultLauncher(
+            this,
+            { success ->
+                startActivity(
+                    PaymentResultActivity.getIntent(
+                        this@PaymentWidgetActivity,
+                        true,
+                        arrayListOf(
+                            "PaymentKey|${success.paymentKey}",
+                            "OrderId|${success.orderId}",
+                            "Amount|${success.amount}"
+                        )
+                    )
+                )
+            },
+            { fail ->
+                startActivity(
+                    PaymentResultActivity.getIntent(
+                        this@PaymentWidgetActivity,
+                        false,
+                        arrayListOf(
+                            "ErrorCode|${fail.errorCode}",
+                            "ErrorMessage|${fail.errorMessage}",
+                            "OrderId|${fail.orderId}"
+                        )
+                    )
+                )
+            })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

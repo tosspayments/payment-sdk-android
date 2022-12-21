@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,49 +19,39 @@ import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.application.composable.CtaButton
 import com.tosspayments.paymentsdk.application.composable.PaymentInfoInput
 import com.tosspayments.paymentsdk.application.model.PaymentUiState
-import com.tosspayments.paymentsdk.model.TossPaymentResult
-import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.application.viewmodel.BasePaymentViewModel
+import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 
 abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            when (result.resultCode) {
-                TossPayments.RESULT_PAYMENT_SUCCESS -> {
-                    result.data?.getParcelableExtra<TossPaymentResult.Success>(TossPayments.EXTRA_PAYMENT_RESULT_SUCCESS)
-                        ?.let { success ->
-                            startActivity(
-                                PaymentResultActivity.getIntent(
-                                    this@PaymentActivity,
-                                    true,
-                                    arrayListOf(
-                                        "PaymentKey|${success.paymentKey}",
-                                        "OrderId|${success.orderId}",
-                                        "Amount|${success.amount}"
-                                    )
-                                )
-                            )
-                        }
-                }
-                TossPayments.RESULT_PAYMENT_FAILED -> {
-                    result.data?.getParcelableExtra<TossPaymentResult.Fail>(TossPayments.EXTRA_PAYMENT_RESULT_FAILED)
-                        ?.let { fail ->
-                            startActivity(
-                                PaymentResultActivity.getIntent(
-                                    this@PaymentActivity,
-                                    false,
-                                    arrayListOf(
-                                        "ErrorCode|${fail.errorCode}",
-                                        "ErrorMessage|${fail.errorMessage}",
-                                        "OrderId|${fail.orderId}"
-                                    )
-                                )
-                            )
-                        }
-                }
-                else -> {}
-            }
-        }
+        TossPayments.getPaymentResultLauncher(
+            this,
+            { success ->
+                startActivity(
+                    PaymentResultActivity.getIntent(
+                        this@PaymentActivity,
+                        true,
+                        arrayListOf(
+                            "PaymentKey|${success.paymentKey}",
+                            "OrderId|${success.orderId}",
+                            "Amount|${success.amount}"
+                        )
+                    )
+                )
+            },
+            { fail ->
+                startActivity(
+                    PaymentResultActivity.getIntent(
+                        this@PaymentActivity,
+                        false,
+                        arrayListOf(
+                            "ErrorCode|${fail.errorCode}",
+                            "ErrorMessage|${fail.errorMessage}",
+                            "OrderId|${fail.orderId}"
+                        )
+                    )
+                )
+            })
 
     abstract val viewModel: BasePaymentViewModel<K>
 

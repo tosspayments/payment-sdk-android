@@ -181,7 +181,9 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     private fun requestPayment(paymentInfoPayload: String) {
         showLoading(true)
 
-        paymentWebView.webViewClient = getPaymentWebViewClient()
+        paymentWebView.webViewClient = getPaymentWebViewClient {
+            evaluateJavascript("javascript:$paymentInfoPayload", null)
+        }
 
         paymentWebView.loadUrl("file:///android_asset/tosspayment.html")
     }
