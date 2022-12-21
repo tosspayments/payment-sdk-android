@@ -84,7 +84,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 viewModel.setOrderName(it.toString())
             }
 
-            setText("리팩터링 2판 외 1권")
+            setText("Kotlin IN ACTION 외 1권")
         }
     }
 
