@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.application.R
 import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
@@ -35,7 +34,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
-        TossPayments.getPaymentResultLauncher(
+        PaymentWidget.getPaymentResultLauncher(
             this,
             { success ->
                 handlePaymentSuccessResult(success)
