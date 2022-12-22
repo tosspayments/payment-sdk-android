@@ -2,7 +2,9 @@ package com.tosspayments.paymentsdk
 
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
 class PaymentWidget(private val clientKey: String) {
@@ -11,6 +13,17 @@ class PaymentWidget(private val clientKey: String) {
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
     private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
+
+    companion object {
+        @JvmStatic
+        fun getPaymentResultLauncher(
+            activity: AppCompatActivity,
+            onSuccess: (TossPaymentResult.Success) -> Unit,
+            onFailed: (TossPaymentResult.Fail) -> Unit
+        ): ActivityResultLauncher<Intent> {
+            return TossPayments.getPaymentResultLauncher(activity, onSuccess, onFailed)
+        }
+    }
 
     private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
         return object : PaymentWidgetCallback {

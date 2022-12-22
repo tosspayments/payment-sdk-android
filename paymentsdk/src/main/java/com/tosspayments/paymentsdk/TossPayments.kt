@@ -26,6 +26,7 @@ class TossPayments(private val clientKey: String) : TossPayment {
         const val RESULT_PAYMENT_SUCCESS: Int = 200
         const val RESULT_PAYMENT_FAILED: Int = 201
 
+        @JvmStatic
         fun getPaymentResultLauncher(
             activity: AppCompatActivity, onSuccess: (TossPaymentResult.Success) -> Unit,
             onFailed: (TossPaymentResult.Fail) -> Unit
