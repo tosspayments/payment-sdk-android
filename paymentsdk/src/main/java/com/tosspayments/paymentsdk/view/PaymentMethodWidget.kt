@@ -7,40 +7,30 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
-import androidx.core.widget.ContentLoadingProgressBar
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
-    private val webViewContainer: ViewGroup
-    private val loadingProgressBar: ContentLoadingProgressBar
     private val paymentWebView: WebView
 
     private var methodRenderCalled: Boolean = false
     private var paymentWidgetCallback: PaymentWidgetCallback? = null
 
+    private val defaultScope = CoroutineScope(Job() + Dispatchers.Default)
+
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
-            webViewContainer = findViewById<ViewGroup>(R.id.payment_webview_container).apply {
-                this@apply.layoutParams = this@apply.layoutParams.apply {
-                    this.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                }
-            }
-
-            loadingProgressBar = findViewById(R.id.progress_loading)
-
+        LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
             paymentWebView = findViewById<WebView?>(R.id.webview_payment).apply {
                 this@apply.layoutParams = this@apply.layoutParams.apply {
                     this.height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -80,9 +70,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         return object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                loadingProgressBar.visibility = View.GONE
-                paymentWebView.visibility = View.VISIBLE
-
                 view?.onPageFinished()
             }
 
@@ -121,7 +108,11 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         } ?: false
     }
 
-    internal fun renderPaymentMethods(clientKey: String, customerKey: String, amount: Long) {
+    internal fun renderPaymentMethods(
+        clientKey: String,
+        customerKey: String,
+        amount: Long
+    ) {
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = PaymentWidget('$clientKey', '$customerKey');")
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
@@ -165,11 +156,10 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    private fun setHeight(height: Float) {
-        runBlocking {
-            val convertedHeight = withContext(Dispatchers.Default) {
-                (height * (context.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).toInt()
-            }
+    private fun setHeight(heightPx: Float) {
+        defaultScope.launch {
+            val convertedHeight =
+                (heightPx * (context.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).toInt()
 
             launch(Dispatchers.Main) {
                 paymentWebView.layoutParams = paymentWebView.layoutParams.apply {
