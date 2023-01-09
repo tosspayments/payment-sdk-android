@@ -106,10 +106,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     private fun renderMethodWidget(amount: Long) {
-        paymentWidget.renderPaymentMethodWidget(
-            CUSTOMER_KEY,
-            amount
-        )
+        paymentWidget.renderPaymentMethodWidget(CUSTOMER_KEY, amount)
     }
 
     private fun handleUiState(uiState: PaymentWidgetViewModel.UiState) {
