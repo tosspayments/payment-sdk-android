@@ -1,14 +1,14 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.input.KeyboardType
-import com.tosspayments.paymentsdk.application.composable.ItemSelectDialog
-import com.tosspayments.paymentsdk.application.composable.PaymentInfoInput
+import com.tosspayments.paymentsdk.sample.viewmodel.AccountPaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.CashReceipt
 import com.tosspayments.paymentsdk.model.paymentinfo.TossAccountPaymentInfo
-import com.tosspayments.paymentsdk.application.viewmodel.AccountPaymentViewModel
+import com.tosspayments.paymentsdk.sample.composable.ItemSelectDialog
+import com.tosspayments.paymentsdk.sample.composable.PaymentInfoInput
 
 class AccountPaymentActivity : PaymentActivity<TossAccountPaymentInfo>() {
     override val viewModel: AccountPaymentViewModel by viewModels()

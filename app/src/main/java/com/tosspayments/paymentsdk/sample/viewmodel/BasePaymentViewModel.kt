@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.viewmodel
+package com.tosspayments.paymentsdk.sample.viewmodel
 
 import android.app.Activity
 import android.content.Intent
@@ -6,8 +6,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tosspayments.paymentsdk.TossPayments
-import com.tosspayments.paymentsdk.application.model.PaymentUiState
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
+import com.tosspayments.paymentsdk.sample.model.PaymentUiState
 import kotlinx.coroutines.flow.*
 
 abstract class BasePaymentViewModel<T : TossPaymentInfo> : ViewModel() {

@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.application.R
-import com.tosspayments.paymentsdk.application.viewmodel.PaymentWidgetViewModel
+import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest

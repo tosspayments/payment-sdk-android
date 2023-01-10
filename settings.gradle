@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "TossPaymentsSdk"
+rootProject.name = "TossPaymentSdk"
 include ':app'
 include ':paymentsdk'

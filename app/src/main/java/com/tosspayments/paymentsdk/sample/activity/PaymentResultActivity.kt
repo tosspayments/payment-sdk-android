@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import android.content.Context
 import android.content.Intent
@@ -18,9 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tosspayments.paymentsdk.application.R
-import com.tosspayments.paymentsdk.application.composable.Label
-import com.tosspayments.paymentsdk.application.composable.Title
+import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.composable.Label
+import com.tosspayments.paymentsdk.sample.composable.Title
 
 class PaymentResultActivity : AppCompatActivity() {
     companion object {

@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.composable
+package com.tosspayments.paymentsdk.sample.composable
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.tosspayments.paymentsdk.application.R
+import com.tosspayments.paymentsdk.sample.R
 
 @Composable
 fun Title(text: String, modifier: Modifier = Modifier) {

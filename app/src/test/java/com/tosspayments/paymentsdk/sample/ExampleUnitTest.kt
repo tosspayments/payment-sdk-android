@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application
+package com.tosspayments.paymentsdk.sample
 
 import org.junit.Test
 
