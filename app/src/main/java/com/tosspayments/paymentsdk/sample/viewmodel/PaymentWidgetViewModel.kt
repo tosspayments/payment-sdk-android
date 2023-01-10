@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.viewmodel
+package com.tosspayments.paymentsdk.sample.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

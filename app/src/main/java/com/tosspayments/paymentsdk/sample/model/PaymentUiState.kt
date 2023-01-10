@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.model
+package com.tosspayments.paymentsdk.sample.model
 
 sealed class PaymentUiState {
     object Edit : PaymentUiState()

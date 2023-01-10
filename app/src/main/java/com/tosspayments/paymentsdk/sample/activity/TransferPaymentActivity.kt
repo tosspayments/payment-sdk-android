@@ -1,12 +1,12 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import com.tosspayments.paymentsdk.application.composable.ItemSelectDialog
+import com.tosspayments.paymentsdk.sample.viewmodel.TransferPaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.CashReceipt
 import com.tosspayments.paymentsdk.model.paymentinfo.TossTransferPaymentInfo
-import com.tosspayments.paymentsdk.application.viewmodel.TransferPaymentViewModel
+import com.tosspayments.paymentsdk.sample.composable.ItemSelectDialog
 
 class TransferPaymentActivity : PaymentActivity<TossTransferPaymentInfo>() {
     override val viewModel: TransferPaymentViewModel by viewModels()

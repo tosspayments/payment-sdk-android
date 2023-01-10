@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -9,12 +9,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import com.tosspayments.paymentsdk.application.R
-import com.tosspayments.paymentsdk.application.composable.Label
-import com.tosspayments.paymentsdk.application.composable.OutlineButton
+import com.tosspayments.paymentsdk.sample.viewmodel.MobilePaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.TossMobilePaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMobileCarrier
-import com.tosspayments.paymentsdk.application.viewmodel.MobilePaymentViewModel
+import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.composable.Label
+import com.tosspayments.paymentsdk.sample.composable.OutlineButton
 
 class MobilePaymentActivity : PaymentActivity<TossMobilePaymentInfo>() {
     override val viewModel: MobilePaymentViewModel by viewModels()

@@ -1,15 +1,15 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import com.tosspayments.paymentsdk.application.composable.ItemSelectDialog
-import com.tosspayments.paymentsdk.application.composable.PaymentInfoInput
+import com.tosspayments.paymentsdk.sample.viewmodel.CardPaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentCompany
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentFlow
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossEasyPayCompany
-import com.tosspayments.paymentsdk.application.viewmodel.CardPaymentViewModel
+import com.tosspayments.paymentsdk.sample.composable.ItemSelectDialog
+import com.tosspayments.paymentsdk.sample.composable.PaymentInfoInput
 
 class CardPaymentActivity : PaymentActivity<TossCardPaymentInfo>() {
     override val viewModel: CardPaymentViewModel by viewModels()

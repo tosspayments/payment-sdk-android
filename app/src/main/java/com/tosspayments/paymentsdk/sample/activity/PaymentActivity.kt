@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,17 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.tosspayments.paymentsdk.TossPayments
-import com.tosspayments.paymentsdk.application.composable.CtaButton
-import com.tosspayments.paymentsdk.application.composable.PaymentInfoInput
-import com.tosspayments.paymentsdk.application.model.PaymentUiState
-import com.tosspayments.paymentsdk.application.viewmodel.BasePaymentViewModel
+import com.tosspayments.paymentsdk.sample.viewmodel.BasePaymentViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
+import com.tosspayments.paymentsdk.sample.composable.CtaButton
+import com.tosspayments.paymentsdk.sample.composable.PaymentInfoInput
+import com.tosspayments.paymentsdk.sample.model.PaymentUiState
 
 abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
         TossPayments.getPaymentResultLauncher(
-            this,
+            this@PaymentActivity,
             { success ->
                 handlePaymentSuccessResult(success)
             },
@@ -133,7 +133,7 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
     private fun CustomerName() {
         PaymentInfoInput(
             labelText = "고객명",
-            initInputText = viewModel.customerName.collectAsState().value.orEmpty()
+            initInputText = viewModel.customerName.collectAsState().value
         ) {
             viewModel.setCustomerName(it)
         }
@@ -143,7 +143,7 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
     private fun CustomerEmail() {
         PaymentInfoInput(
             labelText = "고객 Email",
-            initInputText = viewModel.customerEmail.collectAsState().value.orEmpty(),
+            initInputText = viewModel.customerEmail.collectAsState().value,
             keyboardType = KeyboardType.Email
         ) {
             viewModel.setCustomerEmail(it)

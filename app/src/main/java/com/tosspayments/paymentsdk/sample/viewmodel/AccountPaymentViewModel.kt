@@ -1,4 +1,4 @@
-package com.tosspayments.paymentsdk.application.viewmodel
+package com.tosspayments.paymentsdk.sample.viewmodel
 
 import android.app.Activity
 import android.content.Intent

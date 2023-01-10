@@ -1,12 +1,12 @@
-package com.tosspayments.paymentsdk.application.activity
+package com.tosspayments.paymentsdk.sample.activity
 
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import com.tosspayments.paymentsdk.application.composable.ItemSelectDialog
+import com.tosspayments.paymentsdk.sample.viewmodel.GiftCertificatePaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMethod
-import com.tosspayments.paymentsdk.application.viewmodel.GiftCertificatePaymentViewModel
+import com.tosspayments.paymentsdk.sample.composable.ItemSelectDialog
 
 class GiftCertificatePaymentActivity : PaymentActivity<TossPaymentInfo>() {
     override val viewModel: GiftCertificatePaymentViewModel by viewModels()
