@@ -25,7 +25,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetViewModel by viewModels()
     private val paymentWidget = PaymentWidget(CLIENT_KEY)
 
-    private lateinit var methodWidget: PaymentMethodWidget
     private lateinit var paymentCta: Button
 
     companion object {
@@ -53,9 +52,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
-        methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget).also {
-            paymentWidget.setMethodWidget(it)
-        }
+        val methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget)
+        paymentWidget.setMethodWidget(methodWidget)
 
         paymentCta = findViewById(R.id.request_payment_cta)
 

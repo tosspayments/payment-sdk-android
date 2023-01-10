@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace 'com.tosspayments.paymentsdk.sample'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.tosspayments.paymentsdk.sample"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
