@@ -28,7 +28,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private lateinit var paymentCta: Button
 
     companion object {
-        private const val CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq"
+        private const val CLIENT_KEY = "live_ck_D4yKeq5bgrpn2v0D4yp3GX0lzW6Y"
         private const val CUSTOMER_KEY = "toss-payment"
     }
 
