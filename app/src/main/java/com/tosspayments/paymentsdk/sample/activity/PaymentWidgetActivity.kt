@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -23,9 +23,20 @@ import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetViewModel by viewModels()
-    private val paymentWidget = PaymentWidget(CLIENT_KEY)
 
+    private var paymentWidget: PaymentWidget? = null
+
+    private lateinit var inputClientKey: EditText
+    private lateinit var inputAmount: EditText
     private lateinit var paymentCta: Button
+    private lateinit var methodWidget: PaymentMethodWidget
+
+    private val amount: Long
+        get() = try {
+            inputAmount.text.toString().toLong()
+        } catch (e: Exception) {
+            0L
+        }
 
     companion object {
         private const val CLIENT_KEY = "live_ck_D4yKeq5bgrpn2v0D4yp3GX0lzW6Y"
@@ -52,22 +63,15 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
-        val methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget)
-        paymentWidget.setMethodWidget(methodWidget)
+        methodWidget = findViewById(R.id.payment_widget)
 
         paymentCta = findViewById(R.id.request_payment_cta)
 
-        findViewById<EditText>(R.id.payment_amount).run {
-            addTextChangedListener {
-                viewModel.setAmount(
-                    try {
-                        it?.toString()?.toLong() ?: 0L
-                    } catch (e: Exception) {
-                        0L
-                    }
-                )
-            }
+        inputClientKey = findViewById<EditText>(R.id.payment_client_key).apply {
+            setText(CLIENT_KEY)
+        }
 
+        inputAmount = findViewById<EditText>(R.id.payment_amount).apply {
             setText("50000")
         }
 
@@ -86,10 +90,36 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
             setText("Kotlin IN ACTION 외 1권")
         }
+
+        findViewById<Button>(R.id.payment_client_key_confirm)?.setOnClickListener {
+            setClientKey()
+        }
+
+        findViewById<Button>(R.id.payment_amount_confirm)?.setOnClickListener {
+            setAmount()
+        }
+
+        setAmount()
+    }
+
+    private fun setClientKey() {
+        viewModel.setClientKey(inputClientKey.text.toString())
+    }
+
+    private fun setAmount() {
+        viewModel.setAmount(amount)
     }
 
     @OptIn(FlowPreview::class)
     private fun bindViewModel() {
+        lifecycleScope.launch {
+            viewModel.clientKey.collectLatest { clientKey ->
+                paymentWidget = PaymentWidget(clientKey, CUSTOMER_KEY)
+                paymentWidget?.setMethodWidget(methodWidget)
+                renderMethodWidget(amount)
+            }
+        }
+
         lifecycleScope.launch {
             viewModel.amount.debounce(300).distinctUntilChanged().collectLatest {
                 renderMethodWidget(it)
@@ -101,10 +131,12 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 handleUiState(uiState)
             }
         }
+
+        setClientKey()
     }
 
     private fun renderMethodWidget(amount: Long) {
-        paymentWidget.renderPaymentMethodWidget(CUSTOMER_KEY, amount)
+        paymentWidget?.renderPaymentMethodWidget(amount)
     }
 
     private fun handleUiState(uiState: PaymentWidgetViewModel.UiState) {
@@ -117,7 +149,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                     isEnabled = true
 
                     setOnClickListener {
-                        paymentWidget.requestPayment(
+                        paymentWidget?.requestPayment(
                             paymentResultLauncher = tossPaymentActivityResult,
                             orderId = uiState.orderId,
                             orderName = uiState.orderName,
