@@ -34,7 +34,7 @@
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
-                <androidx.appcompat.widget.AppCompatEditText
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
                     android:id="@+id/payment_client_key"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -100,14 +100,30 @@
                 android:textColor="@color/black"
                 tools:ignore="HardcodedText" />
 
-            <androidx.appcompat.widget.AppCompatEditText
-                android:id="@+id/payment_order_Id"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/selector_edittext"
-                android:padding="10dp"
-                android:textColor="@color/black" />
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                    android:id="@+id/payment_order_Id"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/selector_edittext"
+                    android:padding="10dp"
+                    android:textColor="@color/black" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/payment_orderId_confirm"
+                    style="@style/Button.Cta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="확인"
+                    tools:ignore="HardcodedText" />
+            </LinearLayout>
 
             <TextView
                 style="@style/Label"

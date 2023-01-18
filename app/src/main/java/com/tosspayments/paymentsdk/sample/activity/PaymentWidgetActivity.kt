@@ -3,16 +3,19 @@ package com.tosspayments.paymentsdk.sample.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatAutoCompleteTextView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.extension.hideKeyboard
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 import kotlinx.coroutines.FlowPreview
@@ -26,7 +29,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     private var paymentWidget: PaymentWidget? = null
 
-    private lateinit var inputClientKey: EditText
+    private lateinit var inputClientKey: AppCompatAutoCompleteTextView
+    private lateinit var inputOrderId: AppCompatAutoCompleteTextView
     private lateinit var inputAmount: EditText
     private lateinit var paymentCta: Button
     private lateinit var methodWidget: PaymentMethodWidget
@@ -39,7 +43,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
     companion object {
-        private const val CLIENT_KEY = "live_ck_D4yKeq5bgrpn2v0D4yp3GX0lzW6Y"
         private const val CUSTOMER_KEY = "toss-payment"
     }
 
@@ -67,21 +70,13 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         paymentCta = findViewById(R.id.request_payment_cta)
 
-        inputClientKey = findViewById<EditText>(R.id.payment_client_key).apply {
-            setText(CLIENT_KEY)
-        }
+        inputClientKey = findViewById(R.id.payment_client_key)
 
         inputAmount = findViewById<EditText>(R.id.payment_amount).apply {
             setText("50000")
         }
 
-        findViewById<EditText>(R.id.payment_order_Id).run {
-            addTextChangedListener {
-                viewModel.setOrderId(it.toString())
-            }
-
-            setText("AD8aZDpbzXs4EQa")
-        }
+        inputOrderId = findViewById(R.id.payment_order_Id)
 
         findViewById<EditText>(R.id.payment_order_name).run {
             addTextChangedListener {
@@ -93,10 +88,17 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.payment_client_key_confirm)?.setOnClickListener {
             setClientKey()
+            hideKeyboard()
         }
 
         findViewById<Button>(R.id.payment_amount_confirm)?.setOnClickListener {
             setAmount()
+            hideKeyboard()
+        }
+
+        findViewById<Button>(R.id.payment_orderId_confirm)?.setOnClickListener {
+            viewModel.setOrderId(inputOrderId.text.toString())
+            hideKeyboard()
         }
 
         setAmount()
@@ -113,10 +115,30 @@ class PaymentWidgetActivity : AppCompatActivity() {
     @OptIn(FlowPreview::class)
     private fun bindViewModel() {
         lifecycleScope.launch {
-            viewModel.clientKey.collectLatest { clientKey ->
+            viewModel.clientKey.collect { clientKey ->
+                inputClientKey.setText(clientKey)
+
                 paymentWidget = PaymentWidget(clientKey, CUSTOMER_KEY)
                 paymentWidget?.setMethodWidget(methodWidget)
                 renderMethodWidget(amount)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.orderId.collectLatest {
+                inputOrderId.setText(it)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.orderIdList.collectLatest { orderIdList ->
+                inputOrderId.setAdapter(
+                    ArrayAdapter(
+                        this@PaymentWidgetActivity,
+                        android.R.layout.simple_list_item_1,
+                        orderIdList.filter { it.isNotBlank() }
+                    )
+                )
             }
         }
 
@@ -132,7 +154,17 @@ class PaymentWidgetActivity : AppCompatActivity() {
             }
         }
 
-        setClientKey()
+        lifecycleScope.launch {
+            viewModel.clientKeyList.collectLatest { clientKeyList ->
+                inputClientKey.setAdapter(
+                    ArrayAdapter(
+                        this@PaymentWidgetActivity,
+                        android.R.layout.simple_list_item_1,
+                        clientKeyList.filter { it.isNotBlank() }
+                    )
+                )
+            }
+        }
     }
 
     private fun renderMethodWidget(amount: Long) {

@@ -1,23 +1,51 @@
 package com.tosspayments.paymentsdk.sample.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class PaymentWidgetViewModel : ViewModel() {
+@SuppressLint("ApplySharedPref")
+class PaymentWidgetViewModel(application: Application) : AndroidViewModel(application) {
+    companion object {
+        private const val LIVE_TEST_CLIENT_KEY = "live_ck_D4yKeq5bgrpn2v0D4yp3GX0lzW6Y"
+        private const val TEST_CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq"
+
+        private const val DEFAULT_ORDER_ID = "AD8aZDpbzXs4EQa"
+    }
+
     private val _amount = MutableStateFlow(0L)
     val amount = _amount.asStateFlow()
 
-    private val _orderId = MutableStateFlow("")
+    private val _orderId = MutableStateFlow(DEFAULT_ORDER_ID)
+    val orderId = _orderId.asStateFlow().onEach {
+        saveDefaultValue(orderIdPref, it)
+    }.shareIn(viewModelScope, replay = 1, started = SharingStarted.WhileSubscribed())
+
+    private val _orderIdList = MutableStateFlow(emptyList<String>())
+    val orderIdList = _orderIdList.asStateFlow()
 
     private val _orderName = MutableStateFlow("")
 
-    private val _clientKey = MutableStateFlow("")
+    private val _clientKey = MutableStateFlow(LIVE_TEST_CLIENT_KEY)
     val clientKey = _clientKey.asStateFlow().onEach {
-        saveClientKey(it)
-    }
+        saveDefaultValue(clientKeyPref, it)
+    }.shareIn(viewModelScope, replay = 1, started = SharingStarted.WhileSubscribed())
+
+    private val _clientKeyList = MutableStateFlow(emptyList<String>())
+    val clientKeyList = _clientKeyList.asStateFlow()
+
+    private val clientKeyPref =
+        application.getSharedPreferences("clientKeyPref", Context.MODE_PRIVATE)
+
+    private val orderIdPref =
+        application.getSharedPreferences("orderIdPref", Context.MODE_PRIVATE)
 
     val uiState: StateFlow<UiState> =
         combine(
@@ -33,9 +61,63 @@ class PaymentWidgetViewModel : ViewModel() {
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), UiState.Invalid)
 
-    private suspend fun saveClientKey(clientKey: String) = withContext(Dispatchers.IO) {
-
+    init {
+        initClientKeyPref()
+        initOrderIdPref()
     }
+
+    private fun initClientKeyPref() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!clientKeyPref.contains(LIVE_TEST_CLIENT_KEY)) {
+                clientKeyPref.edit().putBoolean(LIVE_TEST_CLIENT_KEY, true).commit()
+            }
+
+            if (!clientKeyPref.contains(TEST_CLIENT_KEY)) {
+                clientKeyPref.edit().putBoolean(TEST_CLIENT_KEY, false).commit()
+            }
+
+            val entry = clientKeyPref.all
+            entry.forEach {
+                if (it.value == true) {
+                    _clientKey.emit(it.key)
+                    return@forEach
+                }
+            }
+
+            _clientKeyList.emit(entry.map { it.key })
+        }
+    }
+
+    private fun initOrderIdPref() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!orderIdPref.contains(DEFAULT_ORDER_ID)) {
+                orderIdPref.edit().putBoolean(DEFAULT_ORDER_ID, true).commit()
+            }
+
+            val entry = orderIdPref.all
+            entry.forEach {
+                if (it.value == true) {
+                    _orderId.emit(it.key)
+                    return@forEach
+                }
+            }
+
+            _orderIdList.emit(entry.map { it.key })
+        }
+    }
+
+    private suspend fun saveDefaultValue(pref: SharedPreferences, defaultValue: String) =
+        withContext(Dispatchers.IO) {
+            if (defaultValue.trim().isNotBlank()) {
+                val entry = pref.all
+
+                entry.keys.forEach { key ->
+                    pref.edit().putBoolean(key, defaultValue == key).apply()
+                }
+
+                pref.edit().putBoolean(defaultValue, true).apply()
+            }
+        }
 
     fun setClientKey(clientKey: String) {
         _clientKey.value = clientKey
