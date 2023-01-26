@@ -7,7 +7,7 @@ import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
-class PaymentWidget(private val clientKey: String, private val customerKey : String) {
+class PaymentWidget(private val clientKey: String, private val customerKey: String) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private var methodWidget: PaymentMethodWidget? = null
@@ -63,6 +63,10 @@ class PaymentWidget(private val clientKey: String, private val customerKey : Str
     }
 
     fun renderPaymentMethodWidget(amount: Long) {
+        methodWidget?.renderPaymentMethods(clientKey, customerKey, amount)
+    }
+
+    fun renderPaymentMethodWidget(amount: Float) {
         methodWidget?.renderPaymentMethods(clientKey, customerKey, amount)
     }
 

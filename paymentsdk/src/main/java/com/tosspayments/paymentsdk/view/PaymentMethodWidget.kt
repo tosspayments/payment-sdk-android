@@ -111,7 +111,7 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,
-        amount: Long
+        amount: Number
     ) {
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = PaymentWidget('$clientKey', '$customerKey');")
