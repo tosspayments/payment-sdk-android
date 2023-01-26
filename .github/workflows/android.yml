@@ -2,7 +2,7 @@ name: Android CI Develop
 
 on:
   push:
-    branches: [ "feature/payment-widget" ]
+    branches: [ "develop" ]
   pull_request:
     branches: [ "develop" ]
 
