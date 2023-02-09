@@ -44,7 +44,7 @@ dependencies {
     def lifecycle_version = "2.5.1"
     def compose_version = "1.2.1"
 
-    implementation 'com.github.tosspayments:payment-sdk-android:0.1.0'
+    implementation 'com.github.tosspayments:payment-sdk-android:0.1.1'
 
 //    로컬 테스트시 해제
 //    implementation project(':paymentsdk')
