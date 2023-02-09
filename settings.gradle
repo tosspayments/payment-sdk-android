@@ -18,4 +18,4 @@ rootProject.name = "TossPaymentSdk"
 include ':app'
 
 // 로컬 테스트시 해제
-//include ':paymentsdk'
+include ':paymentsdk'
