@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 sealed interface TossPaymentResult {
     @Parcelize
-    class Success(val paymentKey: String, val orderId: String, val amount: Long) :
+    class Success(val paymentKey: String, val orderId: String, val amount: Number) :
         TossPaymentResult, Parcelable
 
     @Parcelize

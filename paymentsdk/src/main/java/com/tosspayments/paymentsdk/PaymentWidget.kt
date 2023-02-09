@@ -62,11 +62,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         this.methodWidget = methodWidget
     }
 
-    fun renderPaymentMethodWidget(amount: Long) {
-        methodWidget?.renderPaymentMethods(clientKey, customerKey, amount)
-    }
-
-    fun renderPaymentMethodWidget(amount: Float) {
+    fun renderPaymentMethodWidget(amount: Number) {
         methodWidget?.renderPaymentMethods(clientKey, customerKey, amount)
     }
 
