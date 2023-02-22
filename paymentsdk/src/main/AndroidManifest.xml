@@ -8,7 +8,11 @@
         <activity
             android:name=".activity.TossPaymentActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.TossPaymentsWebActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>

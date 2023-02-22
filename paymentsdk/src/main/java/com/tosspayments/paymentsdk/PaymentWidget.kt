@@ -2,6 +2,7 @@ package com.tosspayments.paymentsdk
 
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
@@ -15,6 +16,13 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
     private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
     companion object {
+        @JvmStatic
+        fun getWebActivityResultLauncher(activity: AppCompatActivity) {
+            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+            }
+        }
+
         @JvmStatic
         fun getPaymentResultLauncher(
             activity: AppCompatActivity,
