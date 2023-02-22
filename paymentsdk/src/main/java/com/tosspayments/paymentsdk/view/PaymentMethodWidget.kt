@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
+import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
@@ -63,6 +64,11 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
             height?.toFloat()?.let {
                 setHeight(it)
             }
+        }
+
+        @JavascriptInterface
+        fun requestWebScreen(data: String) {
+            context.startActivity(Intent(context, TossPaymentsWebActivity::class.java))
         }
     }
 
