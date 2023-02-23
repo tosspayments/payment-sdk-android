@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 @SuppressLint("ApplySharedPref")
 class PaymentWidgetViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
-        private const val TEST_CLIENT_KEY = "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq"
+        private const val TEST_CLIENT_KEY = "test_ck_0Poxy1XQL8R4P1zpv14V7nO5Wmlg"
         private const val DEFAULT_ORDER_ID = "AD8aZDpbzXs4EQa"
     }
 
