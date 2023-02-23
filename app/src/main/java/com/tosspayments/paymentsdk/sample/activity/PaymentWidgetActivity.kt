@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.sample.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -43,7 +44,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
     companion object {
-        private const val CUSTOMER_KEY = "toss-payment"
+        private const val CUSTOMER_KEY = "hayoung.kim"
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
@@ -66,6 +67,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
+        WebView.setWebContentsDebuggingEnabled(true)
+
         methodWidget = findViewById(R.id.payment_widget)
 
         paymentCta = findViewById(R.id.request_payment_cta)
