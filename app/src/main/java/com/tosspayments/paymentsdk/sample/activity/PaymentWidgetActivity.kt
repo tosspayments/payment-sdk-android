@@ -171,7 +171,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     private fun renderMethodWidget(amount: Long) {
-        paymentWidget?.renderPaymentMethodWidget(amount)
+        paymentWidget?.renderPaymentMethodWidget(
+            amount = amount,
+            redirectUrl = "https://testbox.dev.tosspayments.bz/api/brandpay/alpha/callback-auth"
+        )
     }
 
     private fun handleUiState(uiState: PaymentWidgetViewModel.UiState) {

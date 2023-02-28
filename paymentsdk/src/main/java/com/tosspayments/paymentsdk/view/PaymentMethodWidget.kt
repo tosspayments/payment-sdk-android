@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
-    private val paymentWebView: WebView
+    private val paymentWebView: PaymentWebView
 
     private var methodRenderCalled: Boolean = false
     private var paymentWidgetCallback: PaymentWidgetCallback? = null
@@ -32,23 +32,19 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
-            paymentWebView = findViewById<WebView?>(R.id.webview_payment).apply {
+            paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 this@apply.layoutParams = this@apply.layoutParams.apply {
                     this.height = ViewGroup.LayoutParams.WRAP_CONTENT
                 }
 
-                settings.javaScriptEnabled = true
-                settings.javaScriptCanOpenWindowsAutomatically = true
-
                 isVerticalScrollBarEnabled = false
-                isHorizontalScrollBarEnabled = false
-
-                webChromeClient = WebChromeClient()
 
                 addJavascriptInterface(
                     TossPaymentWidgetJavascriptInterface(),
                     "PaymentWidgetAndroidSDK"
                 )
+
+                loadLocalHtml("tosspayment_widget.html")
             }
         }
     }
@@ -117,20 +113,21 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,
-        amount: Number
+        amount: Number,
+        redirectUrl: String? = null
     ) {
+        val paymentWidgetConstructor = redirectUrl?.let {
+            "PaymentWidget('$clientKey', '$customerKey', '$it')"
+        } ?: "PaymentWidget('$clientKey', '$customerKey')"
+
         val renderMethodScript = StringBuilder()
-            .appendLine("var paymentWidget = PaymentWidget('$clientKey', '$customerKey');")
+            .appendLine("var paymentWidget = $paymentWidgetConstructor;")
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
             .toString()
 
-        paymentWebView.run {
-            webViewClient = getPaymentWebViewClient {
-                this.evaluateJavascript("javascript:$renderMethodScript", null)
-                methodRenderCalled = true
-            }
-
-            loadUrl("file:///android_asset/tosspayment_widget.html")
+        paymentWebView.webViewClient = getPaymentWebViewClient {
+            evaluateJavascript("javascript:$renderMethodScript", null)
+            methodRenderCalled = true
         }
     }
 
