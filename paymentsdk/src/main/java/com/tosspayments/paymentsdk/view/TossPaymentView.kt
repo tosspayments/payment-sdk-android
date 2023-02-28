@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
@@ -26,7 +27,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     private val failUri = TossPaymentInfo.failUri
 
     private val loadingProgressBar: ContentLoadingProgressBar
-    private val paymentWebView: WebView
+    private val paymentWebView: PaymentWebView
 
     var callback: TossPaymentCallback? = null
 
@@ -136,12 +137,9 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
             loadingProgressBar = findViewById(R.id.progress_loading)
 
-            paymentWebView = findViewById<WebView?>(R.id.webview_payment).apply {
-                settings.javaScriptEnabled = true
-                settings.javaScriptCanOpenWindowsAutomatically = true
-                webChromeClient = WebChromeClient()
-
+            paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 addJavascriptInterface(TossPaymentJavascriptInterface(), "TossPayment")
+                loadUrl("file:///android_asset/tosspayment.html")
             }
         }
     }
@@ -187,8 +185,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         paymentWebView.webViewClient = getPaymentWebViewClient {
             evaluateJavascript("javascript:$paymentInfoPayload", null)
         }
-
-        paymentWebView.loadUrl("file:///android_asset/tosspayment.html")
     }
 
     private fun showLoading(isShown: Boolean) {

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <WebView
+    <com.tosspayments.paymentsdk.view.PaymentWebView
         android:id="@+id/webview_payment"
         android:layout_width="0dp"
         android:layout_height="0dp"
