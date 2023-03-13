@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
-import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
@@ -26,7 +25,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     private val paymentWebView: PaymentWebView
 
     private var methodRenderCalled: Boolean = false
-    private var paymentWidgetCallback: PaymentWidgetCallback? = null
 
     private val defaultScope = CoroutineScope(Job() + Dispatchers.Default)
 
@@ -38,33 +36,17 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
                 }
 
                 isVerticalScrollBarEnabled = false
-
-                addJavascriptInterface(
-                    TossPaymentWidgetJavascriptInterface(),
-                    "PaymentWidgetAndroidSDK"
-                )
-
-                loadLocalHtml("tosspayment_widget.html")
             }
         }
     }
 
-    private inner class TossPaymentWidgetJavascriptInterface {
-        @JavascriptInterface
-        fun requestPayments(paymentDom: String) {
-            paymentWidgetCallback?.onPaymentDomCreated(paymentDom)
-        }
-
+    private inner class TossPaymentWidgetJavascriptInterface(paymentWidgetCallback: PaymentWidgetCallback) :
+        PaymentWebView.PaymentWebViewJavascriptInterface(paymentWidgetCallback) {
         @JavascriptInterface
         fun updateHeight(height: String?) {
             height?.toFloat()?.let {
                 setHeight(it)
             }
-        }
-
-        @JavascriptInterface
-        fun requestWebScreen(data: String) {
-            context.startActivity(Intent(context, TossPaymentsWebActivity::class.java))
         }
     }
 
@@ -114,11 +96,20 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         clientKey: String,
         customerKey: String,
         amount: Number,
-        redirectUrl: String? = null
+        redirectUrl: String,
+        paymentWidgetCallback: PaymentWidgetCallback
     ) {
-        val paymentWidgetConstructor = redirectUrl?.let {
-            "PaymentWidget('$clientKey', '$customerKey', '$it')"
-        } ?: "PaymentWidget('$clientKey', '$customerKey')"
+        paymentWebView.run {
+            addJavascriptInterface(
+                TossPaymentWidgetJavascriptInterface(paymentWidgetCallback),
+                PaymentWebView.JS_INTERFACE_NAME
+            )
+
+            loadLocalHtml("tosspayment_widget.html")
+        }
+
+        val urlObject = "{'brandpay':{'redirectUrl':'$redirectUrl'}}"
+        val paymentWidgetConstructor = "PaymentWidget('$clientKey', '$customerKey', ${urlObject})"
 
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
@@ -137,12 +128,9 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null,
-        paymentWidgetCallback: PaymentWidgetCallback
+        customerName: String? = null
     ) {
         if (methodRenderCalled) {
-            this.paymentWidgetCallback = paymentWidgetCallback
-
             val requestPaymentScript = "paymentWidget.requestPaymentForNativeSDK({\n" +
                     "orderId: '${orderId}',\n" +
                     "orderName: '${orderName}',\n" +
@@ -154,7 +142,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
 
             paymentWebView.evaluateJavascript(requestPaymentScript, null)
         } else {
-            this.paymentWidgetCallback = null
             throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
         }
     }

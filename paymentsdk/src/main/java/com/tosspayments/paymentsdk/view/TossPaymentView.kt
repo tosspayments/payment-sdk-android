@@ -5,13 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
 import android.widget.FrameLayout
-import androidx.core.widget.ContentLoadingProgressBar
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
@@ -26,7 +23,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     private val successUri = TossPaymentInfo.successUri
     private val failUri = TossPaymentInfo.failUri
 
-    private val loadingProgressBar: ContentLoadingProgressBar
     private val paymentWebView: PaymentWebView
 
     var callback: TossPaymentCallback? = null
@@ -135,8 +131,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
-            loadingProgressBar = findViewById(R.id.progress_loading)
-
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 addJavascriptInterface(TossPaymentJavascriptInterface(), "TossPayment")
                 loadUrl("file:///android_asset/tosspayment.html")
@@ -171,11 +165,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         paymentWebView.run {
             webViewClient = getPaymentWebViewClient()
 
-            loadData(
-                Base64.encodeToString(dom.toByteArray(), Base64.NO_PADDING),
-                "text/html",
-                "base64"
-            )
+            loadHtml(dom)
         }
     }
 
@@ -188,7 +178,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     }
 
     private fun showLoading(isShown: Boolean) {
-        loadingProgressBar.visibility = if (isShown) View.VISIBLE else View.GONE
         paymentWebView.visibility = if (isShown) View.GONE else View.VISIBLE
     }
 }

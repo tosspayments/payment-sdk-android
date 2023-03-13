@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 @SuppressLint("ApplySharedPref")
 class PaymentWidgetViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
-        private const val TEST_CLIENT_KEY = "test_ck_0Poxy1XQL8R4P1zpv14V7nO5Wmlg"
         private const val DEFAULT_ORDER_ID = "AD8aZDpbzXs4EQa"
     }
 
@@ -31,10 +30,9 @@ class PaymentWidgetViewModel(application: Application) : AndroidViewModel(applic
 
     private val _orderName = MutableStateFlow("")
 
-    private val _clientKey = MutableStateFlow(TEST_CLIENT_KEY)
-    val clientKey = _clientKey.asStateFlow().onEach {
-        saveDefaultValue(clientKeyPref, it)
-    }.shareIn(viewModelScope, replay = 1, started = SharingStarted.WhileSubscribed())
+    private val _clientKey = MutableStateFlow("")
+    val clientKey = _clientKey.asStateFlow()
+        .shareIn(viewModelScope, replay = 1, started = SharingStarted.WhileSubscribed())
 
     private val _clientKeyList = MutableStateFlow(emptyList<String>())
     val clientKeyList = _clientKeyList.asStateFlow()
@@ -60,26 +58,7 @@ class PaymentWidgetViewModel(application: Application) : AndroidViewModel(applic
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), UiState.Invalid)
 
     init {
-        initClientKeyPref()
         initOrderIdPref()
-    }
-
-    private fun initClientKeyPref() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (!clientKeyPref.contains(TEST_CLIENT_KEY)) {
-                clientKeyPref.edit().putBoolean(TEST_CLIENT_KEY, false).commit()
-            }
-
-            val entry = clientKeyPref.all
-            entry.forEach {
-                if (it.value == true) {
-                    _clientKey.emit(it.key)
-                    return@forEach
-                }
-            }
-
-            _clientKeyList.emit(entry.map { it.key })
-        }
     }
 
     private fun initOrderIdPref() {

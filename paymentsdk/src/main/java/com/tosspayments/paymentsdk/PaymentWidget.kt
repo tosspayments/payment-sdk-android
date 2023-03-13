@@ -1,28 +1,35 @@
 package com.tosspayments.paymentsdk
 
+import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
-class PaymentWidget(private val clientKey: String, private val customerKey: String) {
+class PaymentWidget(
+    activity: AppCompatActivity,
+    private val clientKey: String,
+    private val customerKey: String
+) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
     private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
-    companion object {
-        @JvmStatic
-        fun getWebActivityResultLauncher(activity: AppCompatActivity) {
-            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-
+    private val htmlRequestActivityResult =
+        activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.d("Kangdroid", "data")
             }
         }
 
+    companion object {
         @JvmStatic
         fun getPaymentResultLauncher(
             activity: AppCompatActivity,
@@ -37,6 +44,17 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         return object : PaymentWidgetCallback {
             override fun onPaymentDomCreated(paymentDom: String) {
                 handlePaymentDom(orderId, paymentDom)
+            }
+
+            override fun onHtmlRequested(html: String) {
+                methodWidget?.context?.let { context ->
+                    htmlRequestActivityResult.launch(
+                        TossPaymentsWebActivity.getIntent(context, html)
+                    )
+                }
+            }
+
+            override fun onHtmlRequestSucceeded(html: String) {
             }
         }
     }
@@ -70,8 +88,14 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         this.methodWidget = methodWidget
     }
 
-    fun renderPaymentMethodWidget(amount: Number, redirectUrl : String? = null) {
-        methodWidget?.renderPaymentMethods(clientKey, customerKey, amount, redirectUrl)
+    fun renderPaymentMethodWidget(amount: Number, orderId: String, redirectUrl: String) {
+        methodWidget?.renderPaymentMethods(
+            clientKey,
+            customerKey,
+            amount,
+            redirectUrl,
+            getPaymentWidgetCallback(orderId)
+        )
     }
 
     @JvmOverloads
@@ -90,8 +114,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
                 orderId,
                 orderName,
                 customerEmail,
-                customerName,
-                getPaymentWidgetCallback(orderId)
+                customerName
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
@@ -115,8 +138,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
                 orderId,
                 orderName,
                 customerEmail,
-                customerName,
-                getPaymentWidgetCallback(orderId)
+                customerName
             )
         } ?: kotlin.run {
             this.requestCode = null
