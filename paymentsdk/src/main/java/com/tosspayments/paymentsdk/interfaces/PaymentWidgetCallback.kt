@@ -1,5 +1,7 @@
 package com.tosspayments.paymentsdk.interfaces
 
 internal interface PaymentWidgetCallback {
-    fun onPaymentDomCreated(paymentDom : String)
+    fun onPaymentDomCreated(html : String)
+    fun onHtmlRequested(html : String)
+    fun onHtmlRequestSucceeded(html : String)
 }

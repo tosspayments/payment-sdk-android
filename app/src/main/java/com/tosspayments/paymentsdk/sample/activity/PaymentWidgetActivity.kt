@@ -19,17 +19,13 @@ import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.extension.hideKeyboard
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetViewModel by viewModels()
 
-    private var paymentWidget: PaymentWidget? = null
-
+    private lateinit var paymentWidget: PaymentWidget
     private lateinit var inputClientKey: AppCompatAutoCompleteTextView
     private lateinit var inputOrderId: AppCompatAutoCompleteTextView
     private lateinit var inputAmount: EditText
@@ -43,8 +39,18 @@ class PaymentWidgetActivity : AppCompatActivity() {
             0L
         }
 
+    private val orderId: String
+        get() = try {
+            inputOrderId.text.toString()
+        } catch (e: Exception) {
+            ""
+        }
+
     companion object {
         private const val CUSTOMER_KEY = "hayoung.kim"
+        private const val TEST_CLIENT_KEY = "test_ck_Wd46qopOB89z0EDjQXd3ZmM75y0v"
+        private const val REDIRECT_URL =
+            "https://testbox.dev.tosspayments.bz/api/brandpay/alpha/callback-auth?secretKey=test_sk_OyL0qZ4G1VOm6RkayMP8oWb2MQYg"
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
@@ -68,6 +74,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun initViews() {
         WebView.setWebContentsDebuggingEnabled(true)
+
+        paymentWidget = PaymentWidget(this@PaymentWidgetActivity, TEST_CLIENT_KEY, CUSTOMER_KEY)
 
         methodWidget = findViewById(R.id.payment_widget)
 
@@ -115,15 +123,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
         viewModel.setAmount(amount)
     }
 
-    @OptIn(FlowPreview::class)
     private fun bindViewModel() {
+        viewModel.setClientKey(TEST_CLIENT_KEY)
+
         lifecycleScope.launch {
             viewModel.clientKey.collect { clientKey ->
                 inputClientKey.setText(clientKey)
-
-                paymentWidget = PaymentWidget(clientKey, CUSTOMER_KEY)
-                paymentWidget?.setMethodWidget(methodWidget)
-                renderMethodWidget(amount)
+                paymentWidget.setMethodWidget(methodWidget)
+                renderMethodWidget()
             }
         }
 
@@ -146,12 +153,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.amount.debounce(300).distinctUntilChanged().collectLatest {
-                renderMethodWidget(it)
-            }
-        }
-
-        lifecycleScope.launch {
             viewModel.uiState.collectLatest { uiState ->
                 handleUiState(uiState)
             }
@@ -170,10 +171,11 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
     }
 
-    private fun renderMethodWidget(amount: Long) {
-        paymentWidget?.renderPaymentMethodWidget(
+    private fun renderMethodWidget() {
+        paymentWidget.renderPaymentMethodWidget(
             amount = amount,
-            redirectUrl = "https://testbox.dev.tosspayments.bz/api/brandpay/alpha/callback-auth"
+            orderId = orderId,
+            redirectUrl = REDIRECT_URL
         )
     }
 

@@ -3,42 +3,57 @@ package com.tosspayments.paymentsdk.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
-import android.view.MotionEvent
+import android.util.Base64
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.webkit.WebViewAssetLoader
-import androidx.webkit.WebViewClientCompat
+import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(context, attrs) {
-    init {
-        val assetLoader = WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
-            .build()
+    companion object {
+        const val JS_INTERFACE_NAME = "PaymentWidgetAndroidSDK"
+    }
 
+    init {
         settings.run {
             javaScriptEnabled = true
             javaScriptCanOpenWindowsAutomatically = true
-        }
+            domStorageEnabled = true
 
-        webViewClient = object : WebViewClientCompat() {
-            override fun shouldInterceptRequest(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): WebResourceResponse? {
-                return request?.url?.let {
-                    assetLoader.shouldInterceptRequest(it)
-                } ?: super.shouldInterceptRequest(view, request)
-            }
+            allowUniversalAccessFromFileURLs = true
+            allowFileAccessFromFileURLs = true
         }
 
         webChromeClient = WebChromeClient()
     }
 
+    internal open class PaymentWebViewJavascriptInterface(private val paymentWidgetCallback: PaymentWidgetCallback?) {
+        @JavascriptInterface
+        fun requestPayments(html: String) {
+            paymentWidgetCallback?.onPaymentDomCreated(html)
+        }
+
+        @JavascriptInterface
+        fun requestHTML(html: String) {
+            paymentWidgetCallback?.onHtmlRequested(html)
+        }
+
+        @JavascriptInterface
+        fun success(html: String) {
+            paymentWidgetCallback?.onHtmlRequested(html)
+        }
+    }
+
     fun loadLocalHtml(fileName: String) {
-        loadUrl("https://appassets.androidplatform.net/assets/$fileName")
+        loadUrl("file:///android_asset/$fileName")
+    }
+
+    fun loadHtml(html: String) {
+        loadData(
+            Base64.encodeToString(html.toByteArray(), Base64.NO_PADDING),
+            "text/html",
+            "base64"
+        )
     }
 }
