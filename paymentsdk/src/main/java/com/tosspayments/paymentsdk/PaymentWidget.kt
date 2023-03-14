@@ -42,14 +42,14 @@ class PaymentWidget(
 
     private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
         return object : PaymentWidgetCallback {
-            override fun onPaymentDomCreated(paymentDom: String) {
-                handlePaymentDom(orderId, paymentDom)
+            override fun onPostPaymentHtml(html: String) {
+                handlePaymentDom(orderId, html)
             }
 
-            override fun onHtmlRequested(html: String) {
+            override fun onHtmlRequested(domain: String?, html: String) {
                 methodWidget?.context?.let { context ->
                     htmlRequestActivityResult.launch(
-                        TossPaymentsWebActivity.getIntent(context, html)
+                        TossPaymentsWebActivity.getIntent(context, domain, html)
                     )
                 }
             }
@@ -88,7 +88,7 @@ class PaymentWidget(
         this.methodWidget = methodWidget
     }
 
-    fun renderPaymentMethodWidget(amount: Number, orderId: String, redirectUrl: String) {
+    fun renderPaymentMethodWidget(amount: Number, orderId: String, redirectUrl: String? = null) {
         methodWidget?.renderPaymentMethods(
             clientKey,
             customerKey,

@@ -8,7 +8,8 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.webkit.*
+import android.webkit.JavascriptInterface
+import android.webkit.URLUtil
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
@@ -40,28 +41,14 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    private inner class TossPaymentWidgetJavascriptInterface(paymentWidgetCallback: PaymentWidgetCallback) :
-        PaymentWebView.PaymentWebViewJavascriptInterface(paymentWidgetCallback) {
+    private inner class TossPaymentWidgetJavascriptInterface(
+        domain: String?,
+        paymentWidgetCallback: PaymentWidgetCallback?
+    ) : PaymentWebView.PaymentWebViewJavascriptInterface(domain, paymentWidgetCallback) {
         @JavascriptInterface
         fun updateHeight(height: String?) {
             height?.toFloat()?.let {
                 setHeight(it)
-            }
-        }
-    }
-
-    private fun getPaymentWebViewClient(onPageFinished: WebView.() -> Unit): WebViewClient {
-        return object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                view?.onPageFinished()
-            }
-
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                return handleOverrideUrl(request?.url)
             }
         }
     }
@@ -96,18 +83,9 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         clientKey: String,
         customerKey: String,
         amount: Number,
-        redirectUrl: String,
-        paymentWidgetCallback: PaymentWidgetCallback
+        redirectUrl: String? = null,
+        paymentWidgetCallback: PaymentWidgetCallback? = null
     ) {
-        paymentWebView.run {
-            addJavascriptInterface(
-                TossPaymentWidgetJavascriptInterface(paymentWidgetCallback),
-                PaymentWebView.JS_INTERFACE_NAME
-            )
-
-            loadLocalHtml("tosspayment_widget.html")
-        }
-
         val urlObject = "{'brandpay':{'redirectUrl':'$redirectUrl'}}"
         val paymentWidgetConstructor = "PaymentWidget('$clientKey', '$customerKey', ${urlObject})"
 
@@ -116,10 +94,24 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
             .toString()
 
-        paymentWebView.webViewClient = getPaymentWebViewClient {
-            evaluateJavascript("javascript:$renderMethodScript", null)
-            methodRenderCalled = true
+        val domain = try {
+            Uri.parse(redirectUrl).host
+        } catch (e: Exception) {
+            null
         }
+
+        paymentWebView.loadHtml(
+            domain,
+            "tosspayment_widget.html",
+            TossPaymentWidgetJavascriptInterface(domain, paymentWidgetCallback),
+            {
+                evaluateJavascript("javascript:$renderMethodScript", null)
+                methodRenderCalled = true
+            },
+            {
+                handleOverrideUrl(this)
+            }
+        )
     }
 
     @JvmOverloads

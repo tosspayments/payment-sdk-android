@@ -113,7 +113,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
 
         when {
             !paymentDom.isNullOrBlank() -> {
-                viewPayment?.requestPaymentFromDom(paymentDom) ?: kotlin.run { finish() }
+                viewPayment?.requestPaymentHtml(paymentDom) ?: kotlin.run { finish() }
             }
             !methodName.isNullOrBlank() && !clientKey.isNullOrBlank() && !paymentPayload.isNullOrBlank() -> {
                 viewPayment?.requestPayment(clientKey, methodName, paymentPayload)
