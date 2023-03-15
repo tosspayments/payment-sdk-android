@@ -14,6 +14,7 @@ import androidx.appcompat.widget.AppCompatAutoCompleteTextView
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
+import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.sample.BuildConfig
 import com.tosspayments.paymentsdk.sample.R
@@ -75,7 +76,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private fun initViews() {
         WebView.setWebContentsDebuggingEnabled(true)
 
-        paymentWidget = PaymentWidget(this@PaymentWidgetActivity, TEST_CLIENT_KEY, CUSTOMER_KEY)
+        paymentWidget = PaymentWidget(
+            activity = this@PaymentWidgetActivity,
+            clientKey = TEST_CLIENT_KEY,
+            customerKey = CUSTOMER_KEY,
+            options = PaymentWidgetOptions.Builder()
+                .brandPayOption(redirectUrl = REDIRECT_URL)
+                .build()
+        )
 
         methodWidget = findViewById(R.id.payment_widget)
 
@@ -174,8 +182,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private fun renderMethodWidget() {
         paymentWidget.renderPaymentMethodWidget(
             amount = amount,
-            orderId = orderId,
-            redirectUrl = REDIRECT_URL
+            orderId = orderId
         )
     }
 
@@ -192,8 +199,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                         paymentWidget.requestPayment(
                             paymentResultLauncher = tossPaymentActivityResult,
                             orderId = uiState.orderId,
-                            orderName = uiState.orderName,
-                            redirectUrl = REDIRECT_URL
+                            orderName = uiState.orderName
                         )
                     }
                 }
