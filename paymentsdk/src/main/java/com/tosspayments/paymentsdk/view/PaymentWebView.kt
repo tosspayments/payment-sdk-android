@@ -32,17 +32,17 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     ) {
         @JavascriptInterface
         fun requestPayments(html: String) {
-            paymentWidgetCallback?.onPostPaymentHtml(html)
+            paymentWidgetCallback?.onPostPaymentHtml(html, domain)
         }
 
         @JavascriptInterface
         fun requestHTML(html: String) {
-            paymentWidgetCallback?.onHtmlRequested(domain, html)
+            paymentWidgetCallback?.onHtmlRequested(html, domain)
         }
 
         @JavascriptInterface
         fun success(html: String) {
-            paymentWidgetCallback?.onHtmlRequested(domain, html)
+            paymentWidgetCallback?.onSuccess(html, domain)
         }
     }
 

@@ -51,6 +51,10 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
                 setHeight(it)
             }
         }
+
+        @JavascriptInterface
+        fun getAppInfo(os: String, appId: String, sdkVersion: String) {
+        }
     }
 
     private fun handleOverrideUrl(requestedUri: Uri?): Boolean {
@@ -79,6 +83,10 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         } ?: false
     }
 
+    private val redirectOption: (redirectUrl: String?) -> String? = {
+        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
+    }
+
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,
@@ -86,8 +94,8 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         redirectUrl: String? = null,
         paymentWidgetCallback: PaymentWidgetCallback? = null
     ) {
-        val urlObject = "{'brandpay':{'redirectUrl':'$redirectUrl'}}"
-        val paymentWidgetConstructor = "PaymentWidget('$clientKey', '$customerKey', ${urlObject})"
+        val paymentWidgetConstructor =
+            "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
 
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
@@ -105,7 +113,7 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
             "tosspayment_widget.html",
             TossPaymentWidgetJavascriptInterface(domain, paymentWidgetCallback),
             {
-                evaluateJavascript("javascript:$renderMethodScript", null)
+                evaluateJavascript(renderMethodScript)
                 methodRenderCalled = true
             },
             {
@@ -120,22 +128,29 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null
+        customerName: String? = null,
+        redirectUrl: String? = null
     ) {
         if (methodRenderCalled) {
-            val requestPaymentScript = "paymentWidget.requestPaymentForNativeSDK({\n" +
-                    "orderId: '${orderId}',\n" +
-                    "orderName: '${orderName}',\n" +
-                    "successUrl: '${TossPaymentInfo.successUri}',\n" +
-                    "failUrl: '${TossPaymentInfo.failUri}',\n" +
-                    "customerEmail: '${customerEmail.orEmpty()}'," +
-                    "customerName: '${customerName.orEmpty()}'" +
-                    "})"
+            val requestPaymentScript = StringBuilder().apply {
+                appendLine("paymentWidget.requestPaymentForNativeSDK({")
+                appendLine("orderId: '${orderId}',")
+                appendLine("orderName: '${orderName}',")
+                appendLine("successUrl: '${TossPaymentInfo.successUri}',")
+                appendLine("failUrl: '${TossPaymentInfo.failUri}',")
+                appendLine("customerEmail: '${customerEmail.orEmpty()}',")
+                appendLine("customerName: '${customerName.orEmpty()}',")
+                appendLine("redirectUrl : ${redirectOption(redirectUrl)}})")
+            }.toString()
 
             paymentWebView.evaluateJavascript(requestPaymentScript, null)
         } else {
             throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
         }
+    }
+
+    internal fun evaluateJavascript(script: String) {
+        paymentWebView.evaluateJavascript("javascript:$script", null)
     }
 
     private fun setHeight(heightPx: Float) {

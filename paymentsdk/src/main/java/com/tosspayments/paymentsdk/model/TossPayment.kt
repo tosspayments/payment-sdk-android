@@ -9,16 +9,18 @@ import com.tosspayments.paymentsdk.model.paymentinfo.*
 internal interface TossPayment {
     fun requestPayment(
         context: Context,
-        dom: String,
+        paymentHtml: String,
         orderId : String,
-        paymentResultLauncher: ActivityResultLauncher<Intent>
+        paymentResultLauncher: ActivityResultLauncher<Intent>,
+        domain : String? = null
     )
 
     fun requestPayment(
         context: Context,
-        dom: String,
+        paymentHtml: String,
         orderId : String,
-        requestCode: Int
+        requestCode: Int,
+        domain : String? = null
     )
 
     fun requestPayment(

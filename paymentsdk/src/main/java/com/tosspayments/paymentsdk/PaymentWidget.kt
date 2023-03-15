@@ -2,12 +2,12 @@ package com.tosspayments.paymentsdk
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
@@ -25,7 +25,9 @@ class PaymentWidget(
     private val htmlRequestActivityResult =
         activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                Log.d("Kangdroid", "data")
+                methodWidget?.evaluateJavascript(
+                    result.data?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty()
+                )
             }
         }
 
@@ -42,11 +44,11 @@ class PaymentWidget(
 
     private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
         return object : PaymentWidgetCallback {
-            override fun onPostPaymentHtml(html: String) {
-                handlePaymentDom(orderId, html)
+            override fun onPostPaymentHtml(html: String, domain: String?) {
+                handlePaymentDom(orderId, html, domain)
             }
 
-            override fun onHtmlRequested(domain: String?, html: String) {
+            override fun onHtmlRequested(html: String, domain: String?) {
                 methodWidget?.context?.let { context ->
                     htmlRequestActivityResult.launch(
                         TossPaymentsWebActivity.getIntent(context, domain, html)
@@ -54,29 +56,31 @@ class PaymentWidget(
                 }
             }
 
-            override fun onHtmlRequestSucceeded(html: String) {
+            override fun onSuccess(response: String, domain: String?) {
             }
         }
     }
 
-    private fun handlePaymentDom(orderId: String, paymentDom: String) {
-        methodWidget?.context?.let {
-            if (paymentDom.isNotBlank()) {
+    private fun handlePaymentDom(orderId: String, paymentHtml: String, domain: String? = null) {
+        methodWidget?.context?.let { context ->
+            if (paymentHtml.isNotBlank()) {
                 when {
                     requestCode != null -> {
                         tossPayments.requestPayment(
-                            it,
-                            paymentDom,
-                            orderId,
-                            requestCode!!
+                            context = context,
+                            paymentHtml = paymentHtml,
+                            orderId = orderId,
+                            requestCode = requestCode!!,
+                            domain = domain
                         )
                     }
                     paymentResultLauncher != null -> {
                         tossPayments.requestPayment(
-                            it,
-                            paymentDom,
-                            orderId,
-                            paymentResultLauncher!!
+                            context = context,
+                            paymentHtml = paymentHtml,
+                            orderId = orderId,
+                            paymentResultLauncher = paymentResultLauncher!!,
+                            domain = domain
                         )
                     }
                 }
@@ -105,7 +109,8 @@ class PaymentWidget(
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null
+        customerName: String? = null,
+        redirectUrl: String? = null
     ) {
         methodWidget?.let {
             this.paymentResultLauncher = paymentResultLauncher
@@ -114,7 +119,8 @@ class PaymentWidget(
                 orderId,
                 orderName,
                 customerEmail,
-                customerName
+                customerName,
+                redirectUrl
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
@@ -130,6 +136,7 @@ class PaymentWidget(
         orderName: String,
         customerEmail: String? = null,
         customerName: String? = null,
+        redirectUrl: String? = null
     ) {
         methodWidget?.let {
             this.requestCode = requestCode
@@ -138,7 +145,8 @@ class PaymentWidget(
                 orderId,
                 orderName,
                 customerEmail,
-                customerName
+                customerName,
+                redirectUrl
             )
         } ?: kotlin.run {
             this.requestCode = null
