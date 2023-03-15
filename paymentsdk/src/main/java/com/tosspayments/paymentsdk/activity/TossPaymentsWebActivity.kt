@@ -3,7 +3,6 @@ package com.tosspayments.paymentsdk.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.R

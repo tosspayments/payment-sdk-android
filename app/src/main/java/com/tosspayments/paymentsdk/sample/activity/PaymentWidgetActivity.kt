@@ -15,6 +15,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.sample.BuildConfig
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.extension.hideKeyboard
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
@@ -47,10 +48,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
     companion object {
-        private const val CUSTOMER_KEY = "toss.kim"
-        private const val TEST_CLIENT_KEY = "live_ck_ADpexMgkW36Pab1bmPbrGbR5ozO0"
-        private const val REDIRECT_URL =
-            "https://testbox.dev.tosspayments.bz/api/brandpay/beta/callback-auth?secretKey=live_sk_YZ1aOwX7K8m4YayZJ5WryQxzvNPG"
+        private const val CUSTOMER_KEY = BuildConfig.CUSTOMER_KEY
+        private const val TEST_CLIENT_KEY = BuildConfig.CLIENT_KEY
+        private const val REDIRECT_URL = BuildConfig.REDIRECT_URL
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =

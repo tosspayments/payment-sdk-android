@@ -5,6 +5,9 @@ plugins {
     id 'kotlin-android'
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     namespace 'com.tosspayments.paymentsdk.sample'
     compileSdk 33
@@ -20,6 +23,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "CUSTOMER_KEY", properties.getProperty("paymentWidget.customerKey"))
+            buildConfigField("String", "CLIENT_KEY", properties.getProperty("paymentWidget.clientKey"))
+            buildConfigField("String", "REDIRECT_URL", properties.getProperty("paymentWidget.redirectUrl"))
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
