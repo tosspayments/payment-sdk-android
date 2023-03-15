@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
+import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMethod
@@ -19,19 +20,27 @@ internal class TossPaymentActivity : AppCompatActivity() {
             context: Context,
             clientKey: String,
             method: TossPaymentMethod,
-            tossPaymentInfo: TossPaymentInfo
+            tossPaymentInfo: TossPaymentInfo,
+            domain: String? = null
         ): Intent {
             return Intent(context, TossPaymentActivity::class.java).apply {
                 putExtra(TossPayments.EXTRA_CLIENT_KEY, clientKey)
                 putExtra(TossPayments.EXTRA_METHOD, method.displayName)
                 putExtra(TossPayments.EXTRA_PAYMENT_INFO, tossPaymentInfo.getPayload().toString())
+                putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
             }
         }
 
-        internal fun getIntent(context: Context, dom: String, orderId: String): Intent {
+        internal fun getIntent(
+            context: Context,
+            dom: String,
+            orderId: String,
+            domain: String? = null
+        ): Intent {
             return Intent(context, TossPaymentActivity::class.java)
                 .putExtra(TossPayments.EXTRA_PAYMENT_DOM, dom)
                 .putExtra(TossPayments.EXTRA_ORDER_ID, orderId)
+                .putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
         }
     }
 
@@ -90,6 +99,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
         }
         val paymentDom = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_DOM)
         val paymentCanceledMessage = "Payment has been canceled by the customer"
+        val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
 
         val errorMessage = when {
             !paymentDom.isNullOrBlank() -> paymentCanceledMessage
@@ -113,7 +123,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
 
         when {
             !paymentDom.isNullOrBlank() -> {
-                viewPayment?.requestPaymentFromDom(paymentDom) ?: kotlin.run { finish() }
+                viewPayment?.requestPaymentHtml(paymentDom, domain) ?: kotlin.run { finish() }
             }
             !methodName.isNullOrBlank() && !clientKey.isNullOrBlank() && !paymentPayload.isNullOrBlank() -> {
                 viewPayment?.requestPayment(clientKey, methodName, paymentPayload)

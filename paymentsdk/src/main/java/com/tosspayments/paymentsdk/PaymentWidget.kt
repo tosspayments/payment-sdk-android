@@ -1,18 +1,35 @@
 package com.tosspayments.paymentsdk
 
+import android.app.Activity
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
-class PaymentWidget(private val clientKey: String, private val customerKey: String) {
+class PaymentWidget(
+    activity: AppCompatActivity,
+    private val clientKey: String,
+    private val customerKey: String
+) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
     private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
+
+    private val htmlRequestActivityResult =
+        activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                methodWidget?.evaluateJavascript(
+                    result.data?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty()
+                )
+            }
+        }
 
     companion object {
         @JvmStatic
@@ -27,30 +44,43 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
 
     private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
         return object : PaymentWidgetCallback {
-            override fun onPaymentDomCreated(paymentDom: String) {
-                handlePaymentDom(orderId, paymentDom)
+            override fun onPostPaymentHtml(html: String, domain: String?) {
+                handlePaymentDom(orderId, html, domain)
+            }
+
+            override fun onHtmlRequested(html: String, domain: String?) {
+                methodWidget?.context?.let { context ->
+                    htmlRequestActivityResult.launch(
+                        TossPaymentsWebActivity.getIntent(context, domain, html)
+                    )
+                }
+            }
+
+            override fun onSuccess(response: String, domain: String?) {
             }
         }
     }
 
-    private fun handlePaymentDom(orderId: String, paymentDom: String) {
-        methodWidget?.context?.let {
-            if (paymentDom.isNotBlank()) {
+    private fun handlePaymentDom(orderId: String, paymentHtml: String, domain: String? = null) {
+        methodWidget?.context?.let { context ->
+            if (paymentHtml.isNotBlank()) {
                 when {
                     requestCode != null -> {
                         tossPayments.requestPayment(
-                            it,
-                            paymentDom,
-                            orderId,
-                            requestCode!!
+                            context = context,
+                            paymentHtml = paymentHtml,
+                            orderId = orderId,
+                            requestCode = requestCode!!,
+                            domain = domain
                         )
                     }
                     paymentResultLauncher != null -> {
                         tossPayments.requestPayment(
-                            it,
-                            paymentDom,
-                            orderId,
-                            paymentResultLauncher!!
+                            context = context,
+                            paymentHtml = paymentHtml,
+                            orderId = orderId,
+                            paymentResultLauncher = paymentResultLauncher!!,
+                            domain = domain
                         )
                     }
                 }
@@ -62,8 +92,14 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         this.methodWidget = methodWidget
     }
 
-    fun renderPaymentMethodWidget(amount: Number) {
-        methodWidget?.renderPaymentMethods(clientKey, customerKey, amount)
+    fun renderPaymentMethodWidget(amount: Number, orderId: String, redirectUrl: String? = null) {
+        methodWidget?.renderPaymentMethods(
+            clientKey,
+            customerKey,
+            amount,
+            redirectUrl,
+            getPaymentWidgetCallback(orderId)
+        )
     }
 
     @JvmOverloads
@@ -73,7 +109,8 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null
+        customerName: String? = null,
+        redirectUrl: String? = null
     ) {
         methodWidget?.let {
             this.paymentResultLauncher = paymentResultLauncher
@@ -83,7 +120,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
                 orderName,
                 customerEmail,
                 customerName,
-                getPaymentWidgetCallback(orderId)
+                redirectUrl
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
@@ -99,6 +136,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
         orderName: String,
         customerEmail: String? = null,
         customerName: String? = null,
+        redirectUrl: String? = null
     ) {
         methodWidget?.let {
             this.requestCode = requestCode
@@ -108,7 +146,7 @@ class PaymentWidget(private val clientKey: String, private val customerKey: Stri
                 orderName,
                 customerEmail,
                 customerName,
-                getPaymentWidgetCallback(orderId)
+                redirectUrl
             )
         } ?: kotlin.run {
             this.requestCode = null

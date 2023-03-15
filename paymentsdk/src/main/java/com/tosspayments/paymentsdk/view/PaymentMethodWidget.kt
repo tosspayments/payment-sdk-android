@@ -8,7 +8,8 @@ import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.webkit.*
+import android.webkit.JavascriptInterface
+import android.webkit.URLUtil
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
@@ -22,63 +23,37 @@ import kotlinx.coroutines.launch
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
-    private val paymentWebView: WebView
+    private val paymentWebView: PaymentWebView
 
     private var methodRenderCalled: Boolean = false
-    private var paymentWidgetCallback: PaymentWidgetCallback? = null
 
     private val defaultScope = CoroutineScope(Job() + Dispatchers.Default)
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
-            paymentWebView = findViewById<WebView?>(R.id.webview_payment).apply {
+            paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 this@apply.layoutParams = this@apply.layoutParams.apply {
                     this.height = ViewGroup.LayoutParams.WRAP_CONTENT
                 }
 
-                settings.javaScriptEnabled = true
-                settings.javaScriptCanOpenWindowsAutomatically = true
-
                 isVerticalScrollBarEnabled = false
-                isHorizontalScrollBarEnabled = false
-
-                webChromeClient = WebChromeClient()
-
-                addJavascriptInterface(
-                    TossPaymentWidgetJavascriptInterface(),
-                    "PaymentWidgetAndroidSDK"
-                )
             }
         }
     }
 
-    private inner class TossPaymentWidgetJavascriptInterface {
-        @JavascriptInterface
-        fun requestPayments(paymentDom: String) {
-            paymentWidgetCallback?.onPaymentDomCreated(paymentDom)
-        }
-
+    private inner class TossPaymentWidgetJavascriptInterface(
+        domain: String?,
+        paymentWidgetCallback: PaymentWidgetCallback?
+    ) : PaymentWebView.PaymentWebViewJavascriptInterface(domain, paymentWidgetCallback) {
         @JavascriptInterface
         fun updateHeight(height: String?) {
             height?.toFloat()?.let {
                 setHeight(it)
             }
         }
-    }
 
-    private fun getPaymentWebViewClient(onPageFinished: WebView.() -> Unit): WebViewClient {
-        return object : WebViewClient() {
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                view?.onPageFinished()
-            }
-
-            override fun shouldOverrideUrlLoading(
-                view: WebView?,
-                request: WebResourceRequest?
-            ): Boolean {
-                return handleOverrideUrl(request?.url)
-            }
+        @JavascriptInterface
+        fun getAppInfo(os: String, appId: String, sdkVersion: String) {
         }
     }
 
@@ -108,24 +83,43 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         } ?: false
     }
 
+    private val redirectOption: (redirectUrl: String?) -> String? = {
+        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
+    }
+
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,
-        amount: Number
+        amount: Number,
+        redirectUrl: String? = null,
+        paymentWidgetCallback: PaymentWidgetCallback? = null
     ) {
+        val paymentWidgetConstructor =
+            "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
+
         val renderMethodScript = StringBuilder()
-            .appendLine("var paymentWidget = PaymentWidget('$clientKey', '$customerKey');")
+            .appendLine("var paymentWidget = $paymentWidgetConstructor;")
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
             .toString()
 
-        paymentWebView.run {
-            webViewClient = getPaymentWebViewClient {
-                this.evaluateJavascript("javascript:$renderMethodScript", null)
-                methodRenderCalled = true
-            }
-
-            loadUrl("file:///android_asset/tosspayment_widget.html")
+        val domain = try {
+            Uri.parse(redirectUrl).host
+        } catch (e: Exception) {
+            null
         }
+
+        paymentWebView.loadHtml(
+            domain,
+            "tosspayment_widget.html",
+            TossPaymentWidgetJavascriptInterface(domain, paymentWidgetCallback),
+            {
+                evaluateJavascript(renderMethodScript)
+                methodRenderCalled = true
+            },
+            {
+                handleOverrideUrl(this)
+            }
+        )
     }
 
     @JvmOverloads
@@ -135,25 +129,28 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         orderName: String,
         customerEmail: String? = null,
         customerName: String? = null,
-        paymentWidgetCallback: PaymentWidgetCallback
+        redirectUrl: String? = null
     ) {
         if (methodRenderCalled) {
-            this.paymentWidgetCallback = paymentWidgetCallback
-
-            val requestPaymentScript = "paymentWidget.requestPaymentForNativeSDK({\n" +
-                    "orderId: '${orderId}',\n" +
-                    "orderName: '${orderName}',\n" +
-                    "successUrl: '${TossPaymentInfo.successUri}',\n" +
-                    "failUrl: '${TossPaymentInfo.failUri}',\n" +
-                    "customerEmail: '${customerEmail.orEmpty()}'," +
-                    "customerName: '${customerName.orEmpty()}'" +
-                    "})"
+            val requestPaymentScript = StringBuilder().apply {
+                appendLine("paymentWidget.requestPaymentForNativeSDK({")
+                appendLine("orderId: '${orderId}',")
+                appendLine("orderName: '${orderName}',")
+                appendLine("successUrl: '${TossPaymentInfo.successUri}',")
+                appendLine("failUrl: '${TossPaymentInfo.failUri}',")
+                appendLine("customerEmail: '${customerEmail.orEmpty()}',")
+                appendLine("customerName: '${customerName.orEmpty()}',")
+                appendLine("redirectUrl : ${redirectOption(redirectUrl)}})")
+            }.toString()
 
             paymentWebView.evaluateJavascript(requestPaymentScript, null)
         } else {
-            this.paymentWidgetCallback = null
             throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
         }
+    }
+
+    internal fun evaluateJavascript(script: String) {
+        paymentWebView.evaluateJavascript("javascript:$script", null)
     }
 
     private fun setHeight(heightPx: Float) {

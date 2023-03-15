@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.sample.activity
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -14,21 +15,18 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.sample.BuildConfig
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.extension.hideKeyboard
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class PaymentWidgetActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetViewModel by viewModels()
 
-    private var paymentWidget: PaymentWidget? = null
-
+    private lateinit var paymentWidget: PaymentWidget
     private lateinit var inputClientKey: AppCompatAutoCompleteTextView
     private lateinit var inputOrderId: AppCompatAutoCompleteTextView
     private lateinit var inputAmount: EditText
@@ -42,8 +40,17 @@ class PaymentWidgetActivity : AppCompatActivity() {
             0L
         }
 
+    private val orderId: String
+        get() = try {
+            inputOrderId.text.toString()
+        } catch (e: Exception) {
+            ""
+        }
+
     companion object {
-        private const val CUSTOMER_KEY = "toss-payment"
+        private const val CUSTOMER_KEY = BuildConfig.CUSTOMER_KEY
+        private const val TEST_CLIENT_KEY = BuildConfig.CLIENT_KEY
+        private const val REDIRECT_URL = BuildConfig.REDIRECT_URL
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
@@ -66,6 +73,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
+        WebView.setWebContentsDebuggingEnabled(true)
+
+        paymentWidget = PaymentWidget(this@PaymentWidgetActivity, TEST_CLIENT_KEY, CUSTOMER_KEY)
+
         methodWidget = findViewById(R.id.payment_widget)
 
         paymentCta = findViewById(R.id.request_payment_cta)
@@ -112,15 +123,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
         viewModel.setAmount(amount)
     }
 
-    @OptIn(FlowPreview::class)
     private fun bindViewModel() {
+        viewModel.setClientKey(TEST_CLIENT_KEY)
+
         lifecycleScope.launch {
             viewModel.clientKey.collect { clientKey ->
                 inputClientKey.setText(clientKey)
-
-                paymentWidget = PaymentWidget(clientKey, CUSTOMER_KEY)
-                paymentWidget?.setMethodWidget(methodWidget)
-                renderMethodWidget(amount)
+                paymentWidget.setMethodWidget(methodWidget)
+                renderMethodWidget()
             }
         }
 
@@ -143,12 +153,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.amount.debounce(300).distinctUntilChanged().collectLatest {
-                renderMethodWidget(it)
-            }
-        }
-
-        lifecycleScope.launch {
             viewModel.uiState.collectLatest { uiState ->
                 handleUiState(uiState)
             }
@@ -167,8 +171,12 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
     }
 
-    private fun renderMethodWidget(amount: Long) {
-        paymentWidget?.renderPaymentMethodWidget(amount)
+    private fun renderMethodWidget() {
+        paymentWidget.renderPaymentMethodWidget(
+            amount = amount,
+            orderId = orderId,
+            redirectUrl = REDIRECT_URL
+        )
     }
 
     private fun handleUiState(uiState: PaymentWidgetViewModel.UiState) {
@@ -181,10 +189,11 @@ class PaymentWidgetActivity : AppCompatActivity() {
                     isEnabled = true
 
                     setOnClickListener {
-                        paymentWidget?.requestPayment(
+                        paymentWidget.requestPayment(
                             paymentResultLauncher = tossPaymentActivityResult,
                             orderId = uiState.orderId,
                             orderName = uiState.orderName,
+                            redirectUrl = REDIRECT_URL
                         )
                     }
                 }
