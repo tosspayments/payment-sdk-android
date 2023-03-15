@@ -8,15 +8,19 @@ import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.Constants
+import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
 
 class PaymentWidget(
     activity: AppCompatActivity,
     private val clientKey: String,
-    private val customerKey: String
+    private val customerKey: String,
+    private val options: PaymentWidgetOptions? = null
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
+
+    private val redirectUrl = options?.brandPayOption?.redirectUrl
 
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
@@ -92,7 +96,7 @@ class PaymentWidget(
         this.methodWidget = methodWidget
     }
 
-    fun renderPaymentMethodWidget(amount: Number, orderId: String, redirectUrl: String? = null) {
+    fun renderPaymentMethodWidget(amount: Number, orderId: String) {
         methodWidget?.renderPaymentMethods(
             clientKey,
             customerKey,
@@ -109,8 +113,7 @@ class PaymentWidget(
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null,
-        redirectUrl: String? = null
+        customerName: String? = null
     ) {
         methodWidget?.let {
             this.paymentResultLauncher = paymentResultLauncher
@@ -135,8 +138,7 @@ class PaymentWidget(
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null,
-        redirectUrl: String? = null
+        customerName: String? = null
     ) {
         methodWidget?.let {
             this.requestCode = requestCode
