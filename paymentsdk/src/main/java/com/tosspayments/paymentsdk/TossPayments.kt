@@ -63,18 +63,25 @@ class TossPayments(private val clientKey: String) : TossPayment {
 
     override fun requestPayment(
         context: Context,
-        dom: String,
+        paymentHtml: String,
         orderId: String,
-        paymentResultLauncher: ActivityResultLauncher<Intent>
+        paymentResultLauncher: ActivityResultLauncher<Intent>,
+        domain: String?
     ) {
         paymentResultLauncher.launch(
-            TossPaymentActivity.getIntent(context, dom, orderId)
+            TossPaymentActivity.getIntent(context, paymentHtml, orderId, domain)
         )
     }
 
-    override fun requestPayment(context: Context, dom: String, orderId: String, requestCode: Int) {
+    override fun requestPayment(
+        context: Context,
+        paymentHtml: String,
+        orderId: String,
+        requestCode: Int,
+        domain: String?
+    ) {
         (context as? Activity)?.startActivityForResult(
-            TossPaymentActivity.getIntent(context, dom, orderId),
+            TossPaymentActivity.getIntent(context, paymentHtml, orderId, domain),
             requestCode
         )
     }

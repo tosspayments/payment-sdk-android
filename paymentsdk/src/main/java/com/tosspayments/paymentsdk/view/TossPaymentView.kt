@@ -159,13 +159,13 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         requestPayment(requestPaymentScript)
     }
 
-    internal fun requestPaymentHtml(html: String) {
+    internal fun requestPaymentHtml(html: String, domain: String? = null) {
         showLoading(true)
 
         paymentWebView.run {
             webViewClient = getPaymentWebViewClient()
 
-            loadHtml(html)
+            loadHtml(html, domain)
         }
     }
 

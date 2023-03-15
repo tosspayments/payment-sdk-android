@@ -4,22 +4,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 import com.tosspayments.paymentsdk.view.PaymentWebView.Companion.JS_INTERFACE_NAME
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
-        private const val EXTRA_KEY_DATA = "extraKeyTossPaymentWebData"
-        private const val EXTRA_KEY_DOMAIN = "extraKeyTossPaymentDomain"
-
         fun getIntent(context: Context, domain: String?, data: String): Intent {
             return Intent(context, TossPaymentsWebActivity::class.java)
-                .putExtra(EXTRA_KEY_DOMAIN, domain)
-                .putExtra(EXTRA_KEY_DATA, data)
+                .putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
+                .putExtra(Constants.EXTRA_KEY_DATA, data)
         }
     }
 
@@ -35,22 +33,19 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun initViews(intent: Intent?) {
         webView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-            val domain = intent?.getStringExtra(EXTRA_KEY_DOMAIN)
+            val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
 
             addJavascriptInterface(
                 PaymentWebView.PaymentWebViewJavascriptInterface(domain, object :
                     PaymentWidgetCallback {
-                    override fun onPostPaymentHtml(html: String) {
-                        Toast.makeText(this@TossPaymentsWebActivity, html, Toast.LENGTH_SHORT).show()
+                    override fun onPostPaymentHtml(html: String, domain: String?) {
                     }
 
-                    override fun onHtmlRequested(domain: String?, html: String) {
-                        Toast.makeText(this@TossPaymentsWebActivity, html, Toast.LENGTH_SHORT).show()
+                    override fun onHtmlRequested(html: String, domain: String?) {
                     }
 
-                    override fun onHtmlRequestSucceeded(html: String) {
-                        Toast.makeText(this@TossPaymentsWebActivity, html, Toast.LENGTH_SHORT).show()
-                        setResult(RESULT_OK, Intent().putExtra(EXTRA_KEY_DATA, html))
+                    override fun onSuccess(response: String, domain: String?) {
+                        setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
                         finish()
                     }
                 }), JS_INTERFACE_NAME
@@ -65,8 +60,17 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun handleIntent(intent: Intent?) {
         webView.loadHtml(
-            intent?.getStringExtra(EXTRA_KEY_DATA).orEmpty(),
-            intent?.getStringExtra(EXTRA_KEY_DOMAIN)
+            intent?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty(),
+            intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
         )
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
+            webView.goBack()
+            true
+        } else {
+            super.onKeyDown(keyCode, event)
+        }
     }
 }

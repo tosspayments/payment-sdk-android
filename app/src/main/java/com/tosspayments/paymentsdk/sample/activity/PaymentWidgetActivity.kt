@@ -47,10 +47,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
     companion object {
-        private const val CUSTOMER_KEY = "hayoung.kim"
-        private const val TEST_CLIENT_KEY = "test_ck_Wd46qopOB89z0EDjQXd3ZmM75y0v"
+        private const val CUSTOMER_KEY = "toss.kim"
+        private const val TEST_CLIENT_KEY = "live_ck_ADpexMgkW36Pab1bmPbrGbR5ozO0"
         private const val REDIRECT_URL =
-            "https://testbox.dev.tosspayments.bz/api/brandpay/alpha/callback-auth?secretKey=test_sk_OyL0qZ4G1VOm6RkayMP8oWb2MQYg"
+            "https://testbox.dev.tosspayments.bz/api/brandpay/beta/callback-auth?secretKey=live_sk_YZ1aOwX7K8m4YayZJ5WryQxzvNPG"
     }
 
     private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
@@ -189,10 +189,11 @@ class PaymentWidgetActivity : AppCompatActivity() {
                     isEnabled = true
 
                     setOnClickListener {
-                        paymentWidget?.requestPayment(
+                        paymentWidget.requestPayment(
                             paymentResultLauncher = tossPaymentActivityResult,
                             orderId = uiState.orderId,
                             orderName = uiState.orderName,
+                            redirectUrl = REDIRECT_URL
                         )
                     }
                 }
