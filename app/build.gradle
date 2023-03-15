@@ -6,7 +6,7 @@ plugins {
 }
 
 Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+properties.load(project.rootProject.file('gradle.properties').newDataInputStream())
 
 android {
     namespace 'com.tosspayments.paymentsdk.sample'
@@ -53,7 +53,7 @@ dependencies {
     def lifecycle_version = "2.5.1"
     def compose_version = "1.2.1"
 
-//    implementation 'com.github.tosspayments:payment-sdk-android:0.1.1'
+//    implementation 'com.github.tosspayments:payment-sdk-android:0.1.2'
 
 //    로컬 테스트시 해제
     implementation project(':paymentsdk')
