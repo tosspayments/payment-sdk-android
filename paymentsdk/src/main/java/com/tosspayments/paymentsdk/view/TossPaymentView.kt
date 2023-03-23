@@ -31,6 +31,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         const val CONST_PAYMENT_KEY = "paymentKey"
         const val CONST_ORDER_ID = "orderId"
         const val CONST_AMOUNT = "amount"
+        const val CONST_ADDITIONAL_PARAMS = "additionalParameters"
         const val CONST_CODE = "code"
         const val CONST_MESSAGE = "message"
     }
@@ -73,12 +74,23 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
 
             if (isSuccess) {
                 callback?.run {
+                    val additionalParameters = try {
+                        uri.getQueryParameter(CONST_ADDITIONAL_PARAMS)
+                            ?.split(",")
+                            ?.associate {
+                                val (key, value) = it.split(":")
+                                key to value
+                            }.orEmpty()
+                    } catch (e: Exception) {
+                        emptyMap()
+                    }
+
                     onSuccess(
                         TossPaymentResult.Success(
-                            paymentKey = uri.getQueryParameter(CONST_PAYMENT_KEY)
-                                .orEmpty(),
+                            paymentKey = uri.getQueryParameter(CONST_PAYMENT_KEY).orEmpty(),
                             orderId = uri.getQueryParameter(CONST_ORDER_ID).orEmpty(),
-                            amount = uri.getQueryParameter(CONST_AMOUNT)?.toLong() ?: 0
+                            amount = uri.getQueryParameter(CONST_AMOUNT)?.toLong() ?: 0,
+                            additionalParameters = additionalParameters
                         )
                     )
                     true
