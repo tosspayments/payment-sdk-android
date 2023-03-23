@@ -28,7 +28,8 @@ class TossPayments(private val clientKey: String) : TossPayment {
 
         @JvmStatic
         fun getPaymentResultLauncher(
-            activity: AppCompatActivity, onSuccess: (TossPaymentResult.Success) -> Unit,
+            activity: AppCompatActivity,
+            onSuccess: (TossPaymentResult.Success) -> Unit,
             onFailed: (TossPaymentResult.Fail) -> Unit
         ): ActivityResultLauncher<Intent> {
             return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

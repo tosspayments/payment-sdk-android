@@ -9,8 +9,8 @@ plugins {
 
 android {
     compileSdk 33
-
     namespace = 'com.tosspayments.paymentsdk'
+    flavorDimensions "server"
 
     defaultConfig {
         minSdk 21
@@ -18,6 +18,18 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+    }
+
+    productFlavors {
+        dev {
+            dimension "server"
+        }
+        staging {
+            dimension "server"
+        }
+        live {
+            dimension "server"
+        }
     }
 
     buildTypes {
@@ -45,7 +57,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.release
+                from components.liveRelease
                 groupId = 'com.tosspayments.sdk'
                 artifactId = 'payment'
                 version = '0.1.1'
