@@ -30,8 +30,8 @@ jobs:
       - name: Set Build Variables
         id: variables
         run: |
-          echo "TASK=assemble${{steps.string.outputs.capitalized}}Release" >> $GITHUB_OUTPUT
-          echo "FILE_PATH=./app/build/outputs/apk/${{steps.string.outputs.lowercase}}/release/app-${{steps.string.outputs.lowercase}}-release.apk" >> $GITHUB_OUTPUT
+          echo "TASK=assemble${{steps.string.outputs.capitalized}}Debug" >> $GITHUB_OUTPUT
+          echo "FILE_PATH=./app/build/outputs/apk/${{steps.string.outputs.lowercase}}/debug/app-${{steps.string.outputs.lowercase}}-debug.apk" >> $GITHUB_OUTPUT
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
