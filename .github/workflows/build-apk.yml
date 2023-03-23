@@ -60,5 +60,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
+          name: payment-sdk-android
           path: ${{steps.variables.outputs.FILE_PATH}}

@@ -3,7 +3,7 @@ name: Payment SDK Android CI
 on:
   push:
     branch:
-      - feature/cp-92
+      - develop
 
 jobs:
   dev:
