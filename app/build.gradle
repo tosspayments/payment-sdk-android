@@ -41,10 +41,10 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "CUSTOMER_KEY", properties.getProperty("paymentWidget.customerKey"))
-            buildConfigField("String", "CLIENT_KEY", properties.getProperty("paymentWidget.clientKey"))
-            buildConfigField("String", "REDIRECT_URL", properties.getProperty("paymentWidget.redirectUrl"))
-            buildConfigField("String", "ORDER_ID", properties.getProperty("paymentWidget.orderId"))
+            buildConfigField("String", "CUSTOMER_KEY", properties.getProperty("CUSTOMER_KEY"))
+            buildConfigField("String", "CLIENT_KEY", properties.getProperty("CLIENT_KEY"))
+            buildConfigField("String", "REDIRECT_URL", properties.getProperty("ORDER_ID"))
+            buildConfigField("String", "ORDER_ID", properties.getProperty("ORDER_ID"))
         }
 
         release {

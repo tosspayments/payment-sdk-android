@@ -19,6 +19,14 @@ jobs:
         uses: ASzc/change-string-case-action@v5
         with:
           string: ${{inputs.build_flavor}}
+      - name: Restore gradle.properties
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle/
+          echo "CUSTOMER_KEY=CUSTOMER_KEY" >> ~/.gradle/gradle.properties
+          echo "CLIENT_KEY=CLIENT_KEY" >> ~/.gradle/gradle.properties
+          echo "REDIRECT_URL=REDIRECT_URL" >> ~/.gradle/gradle.properties
+          echo "ORDER_ID=ORDER_ID" >> ~/.gradle/gradle.properties
       - name: Set Build Variables
         id: variables
         run: |
