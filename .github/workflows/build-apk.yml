@@ -10,14 +10,6 @@ on:
         required: false
         type: string
         default: live
-      slack_channel_id:
-        required: false
-        type: string
-        default: payment-android-app-release-test
-
-env:
-  SLACK_CHANNEL_ID: ${{inputs.slack_channel_id}}
-  SLACK_BOT_TOKEN: ${{ secrets.SLACK_AUTH_TOKEN }}
 
 jobs:
   build:
@@ -31,7 +23,6 @@ jobs:
         id: variables
         run: |
           echo "TASK=assemble${{steps.string.outputs.capitalized}}Release" >> $GITHUB_OUTPUT
-          echo "FILE_NAME=payment-sdk-sample-${{steps.string.outputs.lowercase}}" >> $GITHUB_OUTPUT
           echo "FILE_PATH=./app/build/outputs/apk/${{steps.string.outputs.lowercase}}/release/app-${{steps.string.outputs.lowercase}}-release.apk" >> $GITHUB_OUTPUT
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -54,10 +45,6 @@ jobs:
       - name: Grant execute permission for gradlew
         shell: bash
         run: chmod +x gradlew
-      - name: Set ENV
-        run: |
-          echo "BRANCH=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "AUTHOR=$GITHUB_ACTOR" >> $GITHUB_ENV
       - name: Build APK
         uses: gradle/gradle-build-action@v2
         with:
@@ -67,109 +54,3 @@ jobs:
         with:
           name: my-artifact
           path: ${{steps.variables.outputs.FILE_PATH}}
-      - name: Get APK info
-        id: apk-info
-        uses: hkusu/apk-info-action@v1
-        with:
-          apk-path: ${{steps.variables.outputs.FILE_PATH}}
-      - name: Notify success result to the slack channel
-        if: ${{success()}}
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: ${{env.SLACK_CHANNEL_ID}}
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ${{env.TITLE}}
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": ":technologist: *Athor* \n${{env.AUTHOR}}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": ":branch: *Branch* \n${{env.BRANCH}}"
-                    }
-                  ]
-                },
-                {
-                  "type": "actions",
-                  "block_id": "actions1",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                          "type": "plain_text",
-                          "text": "다운로드"
-                      },
-                      "style": "primary",
-                      "value": "cancel",
-                      "url": "${{env.APP_CENTER_URL}}",
-                      "action_id": "button_1"
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          TITLE: ":android: *${{ steps.apk-info.outputs.application-name }} ${{ steps.apk-info.outputs.version-name }}* 빌드가 배포되었습니다."
-          COMMIT_MESSAGE: "```${{steps.commit_message.outputs.replaced}}```"
-      - name: Comment on failure
-        if: ${{failure()}}
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          channel-id: ${{env.SLACK_CHANNEL_ID}}
-          update-ts: ${{ steps.slack.outputs.ts }}
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${{env.TITLE}}"
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": ":technologist: *Athor*\n${{env.AUTHOR}}"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": ":branch: *Branch*\n${{env.BRANCH}}"
-                    },
-                   {
-                     "type": "mrkdwn",
-                     "text": ":memo: *Release Note* \n${{ inputs.release_note }}"
-                   }
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${{ env.COMMIT_MESSAGE }}"
-                  }
-                }
-              ]
-            }
-        env:
-          TITLE: ":android: *${{ env.APP_NAME }}* 빌드에 실패하였습니다."
-          COMMIT_MESSAGE: "```${{steps.commit_message.outputs.replaced}}```"

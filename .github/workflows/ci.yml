@@ -5,12 +5,6 @@ on:
     branch:
       - feature/cp-92
 
-env:
-  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_KMS_ACCESS_KEY: ${{ secrets.AWS_KMS_ACCESS_KEY }}
-  AWS_KMS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KMS_SECRET_ACCESS_KEY }}
-
 jobs:
   dev:
     uses: ./.github/workflows/build-apk.yml
