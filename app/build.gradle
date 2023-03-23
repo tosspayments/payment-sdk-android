@@ -6,7 +6,7 @@ plugins {
 }
 
 Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+properties.load(project.rootProject.file('gradle.properties').newDataInputStream())
 
 android {
     namespace 'com.tosspayments.paymentsdk.sample'
