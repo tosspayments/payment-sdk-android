@@ -74,16 +74,9 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
 
             if (isSuccess) {
                 callback?.run {
-                    val additionalParameters = try {
-                        uri.getQueryParameter(CONST_ADDITIONAL_PARAMS)
-                            ?.split(",")
-                            ?.associate {
-                                val (key, value) = it.split(":")
-                                key to value
-                            }.orEmpty()
-                    } catch (e: Exception) {
-                        emptyMap()
-                    }
+                    val additionalParameters = uri.queryParameterNames.filter { key ->
+                        key !in arrayOf(CONST_PAYMENT_KEY, CONST_ORDER_ID, CONST_AMOUNT)
+                    }.associateWith { key -> uri.getQueryParameter(key).orEmpty() }
 
                     onSuccess(
                         TossPaymentResult.Success(
