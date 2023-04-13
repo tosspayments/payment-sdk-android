@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
@@ -78,7 +77,11 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                     uri.path
                 )
 
-            val isCanceled = "PAY_PROCESS_CANCELED".equals(uri.getQueryParameter("code"), true)
+            val isCanceled = try {
+                "PAY_PROCESS_CANCELED".equals(uri.getQueryParameter("code"), true)
+            } catch (e: Exception) {
+                false
+            }
 
             val isFailed =
                 failUri.scheme.equals(uri.scheme) && failUri.host.equals(uri.host) && failUri.path.equals(
@@ -112,9 +115,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                     )
                     true
                 } ?: false
-            } else if (!URLUtil.isNetworkUrl(requestedUrl)
-                && !URLUtil.isJavaScriptUrl(requestedUrl)
-            ) {
+            } else if (!URLUtil.isNetworkUrl(requestedUrl) && !URLUtil.isJavaScriptUrl(requestedUrl)) {
                 return when (uri.scheme) {
                     "intent" -> {
                         context.startSchemeIntent(requestedUrl)
