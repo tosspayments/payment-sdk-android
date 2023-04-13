@@ -6,18 +6,11 @@ on:
       - develop
 
 jobs:
-  dev:
+  build:
+    strategy:
+      matrix:
+        flavor: [ dev, staging, live ]
     uses: ./.github/workflows/build-apk.yml
     with:
       branch: ${{github.ref}}
-      build_flavor: dev
-  staging:
-    uses: ./.github/workflows/build-apk.yml
-    with:
-      branch: ${{github.ref}}
-      build_flavor: staging
-  live:
-    uses: ./.github/workflows/build-apk.yml
-    with:
-      branch: ${{github.ref}}
-      build_flavor: live
+      build_flavor: ${{matrix.flavor}}
