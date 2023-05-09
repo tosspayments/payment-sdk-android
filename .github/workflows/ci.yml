@@ -1,0 +1,16 @@
+name: Payment SDK Android CI
+
+on:
+  push:
+    branch:
+      - develop
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        flavor: [ dev, staging, live ]
+    uses: ./.github/workflows/build-apk.yml
+    with:
+      branch: ${{github.ref}}
+      build_flavor: ${{matrix.flavor}}
