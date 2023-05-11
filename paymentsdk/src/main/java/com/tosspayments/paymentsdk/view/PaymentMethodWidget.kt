@@ -5,29 +5,24 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.webkit.JavascriptInterface
 import android.webkit.URLUtil
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
+import com.tosspayments.paymentsdk.interfaces.IPayment
+import com.tosspayments.paymentsdk.interfaces.IPaymentWidget
+import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
-    FrameLayout(context, attrs) {
+    FrameLayout(context, attrs), IPayment, IPaymentWidget {
     private val paymentWebView: PaymentWebView
 
     private var methodRenderCalled: Boolean = false
-
-    private val defaultScope = CoroutineScope(Job() + Dispatchers.Default)
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
@@ -38,22 +33,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
 
                 isVerticalScrollBarEnabled = false
             }
-        }
-    }
-
-    private inner class TossPaymentWidgetJavascriptInterface(
-        domain: String?,
-        paymentWidgetCallback: PaymentWidgetCallback?
-    ) : PaymentWebView.PaymentWebViewJavascriptInterface(paymentWidgetCallback, domain) {
-        @JavascriptInterface
-        fun updateHeight(height: String?) {
-            height?.toFloat()?.let {
-                setHeight(it)
-            }
-        }
-
-        @JavascriptInterface
-        fun getAppInfo(os: String, appId: String, sdkVersion: String) {
         }
     }
 
@@ -111,7 +90,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         paymentWebView.loadHtml(
             domain,
             "tosspayment_widget.html",
-            TossPaymentWidgetJavascriptInterface(domain, paymentWidgetCallback),
             {
                 evaluateJavascript(renderMethodScript)
                 methodRenderCalled = true
@@ -122,14 +100,13 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         )
     }
 
-    @JvmOverloads
     @Throws(IllegalAccessException::class)
-    internal fun requestPayment(
+    override fun requestPayment(
         orderId: String,
         orderName: String,
-        customerEmail: String? = null,
-        customerName: String? = null,
-        redirectUrl: String? = null
+        customerEmail: String?,
+        customerName: String?,
+        redirectUrl: String?
     ) {
         if (methodRenderCalled) {
             val requestPaymentScript = StringBuilder().apply {
@@ -149,20 +126,15 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    internal fun evaluateJavascript(script: String) {
-        paymentWebView.evaluateJavascript("javascript:$script", null)
+    override fun evaluateJavascript(script: String) {
+        paymentWebView.evaluateJavascript(script)
     }
 
-    private fun setHeight(heightPx: Float) {
-        defaultScope.launch {
-            val convertedHeight =
-                (heightPx * (context.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).toInt()
+    override fun addJavascriptInterface(javascriptInterface: PaymentWebViewJavascriptInterface) {
+        paymentWebView.addJavascriptInterface(javascriptInterface)
+    }
 
-            launch(Dispatchers.Main) {
-                paymentWebView.layoutParams = paymentWebView.layoutParams.apply {
-                    this.height = convertedHeight
-                }
-            }
-        }
+    override fun setHeight(heightPx: Float?) {
+        paymentWebView.setHeight(heightPx)
     }
 }

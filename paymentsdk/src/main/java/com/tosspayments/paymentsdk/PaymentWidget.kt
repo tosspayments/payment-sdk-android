@@ -2,10 +2,12 @@ package com.tosspayments.paymentsdk
 
 import android.app.Activity
 import android.content.Intent
+import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
+import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
@@ -16,7 +18,7 @@ class PaymentWidget(
     activity: AppCompatActivity,
     private val clientKey: String,
     private val customerKey: String,
-    private val options: PaymentWidgetOptions? = null
+    options: PaymentWidgetOptions? = null
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
@@ -93,7 +95,19 @@ class PaymentWidget(
     }
 
     fun setMethodWidget(methodWidget: PaymentMethodWidget) {
-        this.methodWidget = methodWidget
+        this.methodWidget = methodWidget.apply {
+            addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
+                @JavascriptInterface
+                override fun message(message: Any) {
+
+                }
+
+                @JavascriptInterface
+                fun updateHeight(height: String?) {
+                    setHeight(height?.toFloat())
+                }
+            })
+        }
     }
 
     fun renderPaymentMethodWidget(amount: Number, orderId: String) {
