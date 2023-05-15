@@ -24,7 +24,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
     private val clientKey = BuildConfig.CLIENT_KEY
     private val redirectUrl = BuildConfig.REDIRECT_URL
     private val orderId = BuildConfig.ORDER_ID
-    private val orderName = "Kotlin IN ACTION 외 1권"
+    private val orderName = "Kotlin IN ACTION 외 2권"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

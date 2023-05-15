@@ -88,12 +88,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         )
 
         val methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget)
-        paymentWidget.setMethodWidget(methodWidget)
-
-        paymentWidget.renderPaymentMethodWidget(
-            amount = amount,
-            orderId = orderId
-        )
+        paymentWidget.renderPaymentMethods(methodWidget, amount)
 
         findViewById<Button>(R.id.request_payment_cta).setOnClickListener {
             paymentWidget.requestPayment(
@@ -111,7 +106,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         } else {
             // 일반결제 승인 -> 추후 일반결제/브랜드페이 승인으로 Migration 예정되어있음
         }
-        
+
         startActivity(
             PaymentResultActivity.getIntent(
                 this@PaymentWidgetActivity,

@@ -7,7 +7,7 @@ import android.view.KeyEvent
 import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.R
-import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 
@@ -32,13 +32,13 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun initViews() {
         webView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-            addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
+            addJavascriptInterface(object : PaymentJavascriptInterface {
                 @JavascriptInterface
                 fun success(response: String) {
                     setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
                     finish()
                 }
-            })
+            }, PaymentWebView.INTERFACE_NAME_PAYMENT)
         }
     }
 

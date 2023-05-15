@@ -11,7 +11,8 @@ import android.webkit.*
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
-import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
@@ -25,18 +26,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     private val failUri = TossPaymentInfo.failUri
 
     private val paymentWebView: PaymentWebView
-
-    private val paymentWidgetCallback = object : PaymentWidgetCallback {
-        override fun onPostPaymentHtml(html: String, domain: String?) {
-        }
-
-        override fun onHtmlRequested(html: String, domain: String?) {
-        }
-
-        override fun onSuccess(response: String, domain: String?) {
-            callback?.onSuccess(response)
-        }
-    }
 
     var callback: TossPaymentCallback? = null
 
@@ -152,12 +141,25 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-                addJavascriptInterface(TossPaymentJavascriptInterface(), "TossPayment")
+                addJavascriptInterface(object : PaymentJavascriptInterface {
+                    @JavascriptInterface
+                    fun onError(errorCode: String, message: String, orderId: String) {
+                        callback?.onFailed(
+                            TossPaymentResult.Fail(
+                                errorCode = errorCode,
+                                errorMessage = message,
+                                orderId = orderId
+                            )
+                        )
+                    }
+                }, PaymentWebView.INTERFACE_NAME_PAYMENT)
 
-                addJavascriptInterface(
-                    PaymentWebView.PaymentWebViewJavascriptInterface(paymentWidgetCallback),
-                    PaymentWebView.JS_INTERFACE_NAME
-                )
+//                addJavascriptInterface(object : PaymentWidgetJavascriptInterface(this) {
+//                    @JavascriptInterface
+//                    fun onSuccess(response: String, domain: String?) {
+//                        callback?.onSuccess(response)
+//                    }
+//                }, PaymentWebView.INTERFACE_NAME_WIDGET)
 
                 loadUrl("file:///android_asset/tosspayment.html")
             }

@@ -1,14 +1,15 @@
 package com.tosspayments.paymentsdk
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
-import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
-import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
 import com.tosspayments.paymentsdk.model.TossPaymentResult
@@ -23,6 +24,13 @@ class PaymentWidget(
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private val redirectUrl = options?.brandPayOption?.redirectUrl
+    private val domain = try {
+        Uri.parse(redirectUrl).let {
+            "${it.authority}${it.host}"
+        }
+    } catch (e: Exception) {
+        null
+    }
 
     private var methodWidget: PaymentMethodWidget? = null
     private var requestCode: Int? = null
@@ -37,6 +45,8 @@ class PaymentWidget(
             }
         }
 
+    private var orderId: String = ""
+
     companion object {
         @JvmStatic
         fun getPaymentResultLauncher(
@@ -48,75 +58,75 @@ class PaymentWidget(
         }
     }
 
-    private fun getPaymentWidgetCallback(orderId: String): PaymentWidgetCallback {
-        return object : PaymentWidgetCallback {
-            override fun onPostPaymentHtml(html: String, domain: String?) {
-                handlePaymentDom(orderId, html, domain)
-            }
-
-            override fun onHtmlRequested(html: String, domain: String?) {
-                methodWidget?.context?.let { context ->
-                    htmlRequestActivityResult.launch(
-                        TossPaymentsWebActivity.getIntent(context, domain, html)
+    private fun handlePaymentDom(context: Context, paymentHtml: String) {
+        if (paymentHtml.isNotBlank()) {
+            when {
+                requestCode != null -> {
+                    tossPayments.requestPayment(
+                        context = context,
+                        paymentHtml = paymentHtml,
+                        orderId = orderId,
+                        requestCode = requestCode!!,
+                        domain = domain
+                    )
+                }
+                paymentResultLauncher != null -> {
+                    tossPayments.requestPayment(
+                        context = context,
+                        paymentHtml = paymentHtml,
+                        orderId = orderId,
+                        paymentResultLauncher = paymentResultLauncher!!,
+                        domain = domain
                     )
                 }
             }
-
-            override fun onSuccess(response: String, domain: String?) {
-            }
         }
     }
 
-    private fun handlePaymentDom(orderId: String, paymentHtml: String, domain: String? = null) {
-        methodWidget?.context?.let { context ->
-            if (paymentHtml.isNotBlank()) {
-                when {
-                    requestCode != null -> {
-                        tossPayments.requestPayment(
-                            context = context,
-                            paymentHtml = paymentHtml,
-                            orderId = orderId,
-                            requestCode = requestCode!!,
-                            domain = domain
-                        )
-                    }
-                    paymentResultLauncher != null -> {
-                        tossPayments.requestPayment(
-                            context = context,
-                            paymentHtml = paymentHtml,
-                            orderId = orderId,
-                            paymentResultLauncher = paymentResultLauncher!!,
-                            domain = domain
-                        )
-                    }
-                }
-            }
-        }
-    }
-
+    @Deprecated("This function is no longer needed", level = DeprecationLevel.WARNING)
     fun setMethodWidget(methodWidget: PaymentMethodWidget) {
-        this.methodWidget = methodWidget.apply {
-            addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
-                @JavascriptInterface
-                fun message(message: Any) {
-
-                }
-
-                @JavascriptInterface
-                fun updateHeight(height: String?) {
-                    setHeight(height?.toFloat())
-                }
-            })
-        }
+        this.methodWidget = methodWidget
     }
 
+    /**
+     * This function has been deprecated because it is no longer needed. Use [renderPaymentMethods] instead.
+     */
+    @Deprecated(
+        "This function is no longer needed. Use renderPaymentMethods instead.",
+        replaceWith = ReplaceWith("renderPaymentMethods()"),
+        level = DeprecationLevel.WARNING
+    )
     fun renderPaymentMethodWidget(amount: Number, orderId: String) {
         methodWidget?.renderPaymentMethods(
             clientKey,
             customerKey,
             amount,
-            redirectUrl,
-            getPaymentWidgetCallback(orderId)
+            redirectUrl
+        )
+    }
+
+    fun renderPaymentMethods(methodWidget: PaymentMethodWidget, amount: Number) {
+        this.methodWidget = methodWidget.apply {
+            addJavascriptInterface(object : PaymentWidgetJavascriptInterface(this) {
+                @JavascriptInterface
+                fun requestPayments(html: String) {
+                    handlePaymentDom(context, html)
+                }
+
+                @JavascriptInterface
+                fun requestHTML(html: String) {
+                    htmlRequestActivityResult.launch(
+                        TossPaymentsWebActivity.getIntent(context, domain, html)
+                    )
+                }
+            })
+        }
+
+        methodWidget.renderPaymentMethods(
+            clientKey,
+            customerKey,
+            amount,
+            redirectUrl
         )
     }
 
@@ -131,6 +141,7 @@ class PaymentWidget(
     ) {
         methodWidget?.let {
             this.paymentResultLauncher = paymentResultLauncher
+            this.orderId = orderId
 
             it.requestPayment(
                 orderId,
@@ -141,7 +152,8 @@ class PaymentWidget(
             )
         } ?: kotlin.run {
             this.paymentResultLauncher = null
-            throw IllegalAccessException("Payment method widget is not set")
+            this.orderId = ""
+            throw IllegalAccessException("Payment method widget is not rendered.")
         }
     }
 

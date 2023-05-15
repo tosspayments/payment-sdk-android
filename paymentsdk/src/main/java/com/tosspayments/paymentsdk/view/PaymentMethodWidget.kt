@@ -2,66 +2,13 @@ package com.tosspayments.paymentsdk.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.webkit.JavascriptInterface
-import android.webkit.URLUtil
-import android.widget.FrameLayout
-import com.tosspayments.paymentsdk.R
-import com.tosspayments.paymentsdk.extension.startSchemeIntent
-import com.tosspayments.paymentsdk.interfaces.IPayment
-import com.tosspayments.paymentsdk.interfaces.IPaymentWidget
-import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
-import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
-    FrameLayout(context, attrs), IPayment, IPaymentWidget {
-    private val paymentWebView: PaymentWebView
-
-    private var methodRenderCalled: Boolean = false
-
-    init {
-        LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
-            paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-                this@apply.layoutParams = this@apply.layoutParams.apply {
-                    this.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                }
-
-                isVerticalScrollBarEnabled = false
-            }
-        }
-    }
-
-    private fun handleOverrideUrl(requestedUri: Uri?): Boolean {
-        return requestedUri?.let { uri ->
-            val requestedUrl = uri.toString()
-
-            return when {
-                URLUtil.isNetworkUrl(requestedUrl) -> {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                    true
-                }
-                !URLUtil.isJavaScriptUrl(requestedUrl) -> {
-                    if ("intent".equals(uri.scheme, true)) {
-                        context.startSchemeIntent(requestedUrl)
-                    } else {
-                        try {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                            true
-                        } catch (e: java.lang.Exception) {
-                            false
-                        }
-                    }
-                }
-                else -> false
-            }
-        } ?: false
-    }
+    PaymentWidgetContainer(context, attrs) {
+    private var methodRenderCalled = false
 
     private val redirectOption: (redirectUrl: String?) -> String? = {
         it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
@@ -71,8 +18,8 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         clientKey: String,
         customerKey: String,
         amount: Number,
-        redirectUrl: String? = null,
-        paymentWidgetCallback: PaymentWidgetCallback? = null
+        domain: String? = null,
+        redirectUrl: String? = null
     ) {
         val paymentWidgetConstructor =
             "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
@@ -81,12 +28,6 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
             .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
             .toString()
-
-        val domain = try {
-            Uri.parse(redirectUrl).host
-        } catch (e: Exception) {
-            null
-        }
 
         paymentWebView.loadHtml(
             domain,
@@ -102,7 +43,7 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     }
 
     @Throws(IllegalAccessException::class)
-    override fun requestPayment(
+    internal fun requestPayment(
         orderId: String,
         orderName: String,
         customerEmail: String?,
@@ -121,31 +62,14 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
                 appendLine("redirectUrl : ${redirectOption(redirectUrl)}})")
             }.toString()
 
-            paymentWebView.evaluateJavascript(requestPaymentScript, null)
+            evaluateJavascript(requestPaymentScript)
         } else {
             throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
         }
     }
 
-    override fun evaluateJavascript(script: String) {
-        paymentWebView.evaluateJavascript(script)
-    }
+    @JvmOverloads
+    fun updateAmount(amount: Number, description: String = "") {
 
-    override fun addJavascriptInterface() {
-        paymentWebView.addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
-            @JavascriptInterface
-            fun message(message: Any) {
-
-            }
-
-            @JavascriptInterface
-            fun updateHeight(height: String?) {
-                setHeight(height?.toFloat())
-            }
-        })
-    }
-
-    override fun setHeight(heightPx: Float?) {
-        paymentWebView.setHeight(heightPx)
     }
 }

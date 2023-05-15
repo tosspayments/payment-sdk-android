@@ -10,11 +10,11 @@ import android.webkit.URLUtil
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
-import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 
-internal open class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = null) :
+sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
-    private val paymentWebView: PaymentWebView
+    protected val paymentWebView: PaymentWebView
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
@@ -54,15 +54,18 @@ internal open class PaymentWidgetContainer(context: Context, attrs: AttributeSet
         } ?: false
     }
 
-    private val redirectOption: (redirectUrl: String?) -> String? = {
-        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
-    }
-
-    protected fun evaluateJavascript(script: String) {
+    fun evaluateJavascript(script: String) {
         paymentWebView.evaluateJavascript(script)
     }
 
-    protected fun addJavascriptInterface(javascriptInterface: PaymentWebViewJavascriptInterface) {
-        paymentWebView.addJavascriptInterface(javascriptInterface)
+    fun addJavascriptInterface(javascriptInterface: PaymentWidgetJavascriptInterface) {
+        paymentWebView.addJavascriptInterface(
+            javascriptInterface,
+            PaymentWebView.INTERFACE_NAME_WIDGET
+        )
+    }
+
+    internal fun setHeight(heightPx: Float?) {
+        paymentWebView.setHeight(heightPx)
     }
 }

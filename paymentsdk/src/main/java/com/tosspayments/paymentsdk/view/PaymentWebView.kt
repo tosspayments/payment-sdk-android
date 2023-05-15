@@ -9,7 +9,6 @@ import android.util.DisplayMetrics
 import android.webkit.*
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
-import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +19,8 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     private val defaultScope = CoroutineScope(Job() + Dispatchers.Default)
 
     companion object {
-        const val JS_INTERFACE_NAME = "PaymentWidgetAndroidSDK"
+        const val INTERFACE_NAME_PAYMENT = "TossPayment"
+        const val INTERFACE_NAME_WIDGET = "PaymentWidgetAndroidSDK"
     }
 
     init {
@@ -33,46 +33,26 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
         webChromeClient = WebChromeClient()
     }
 
-//    internal open class PaymentWebViewJavascriptInterface(
-//        private val paymentWidgetCallback: PaymentWidgetCallback? = null,
-//        private val domain: String? = null
-//    ) {
-//        @JavascriptInterface
-//        fun requestPayments(html: String) {
-//            paymentWidgetCallback?.onPostPaymentHtml(html, domain)
-//        }
-//
-//        @JavascriptInterface
-//        fun requestHTML(html: String) {
-//            paymentWidgetCallback?.onHtmlRequested(html, domain)
-//        }
-//
-//        @JavascriptInterface
-//        fun success(html: String) {
-//            paymentWidgetCallback?.onSuccess(html, domain)
-//        }
-//    }
-
-    @SuppressLint("JavascriptInterface")
-    internal fun addJavascriptInterface(javascriptInterface: PaymentWebViewJavascriptInterface) {
-        addJavascriptInterface(javascriptInterface, JS_INTERFACE_NAME)
-    }
-
     internal fun loadHtml(
         domain: String?,
         htmlFileName: String,
         onPageFinished: WebView.() -> Unit,
         shouldOverrideUrlLoading: Uri?.() -> Boolean
     ) {
-        val htmlFileUrl =
-            "https://${domain ?: "appassets.androidplatform.net"}/assets/$htmlFileName"
+        val host = if (domain.isNullOrBlank()) {
+            "https://appassets.androidplatform.net"
+        } else {
+            domain
+        }
+
+        val htmlFileUrl = "${host}/assets/$htmlFileName"
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
             .addPathHandler("/res/", WebViewAssetLoader.ResourcesPathHandler(context))
             .apply {
-                domain?.let {
-                    setDomain(it)
+                if (!domain.isNullOrBlank()) {
+                    setDomain(domain)
                 }
             }
             .build()
@@ -104,21 +84,19 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     }
 
     fun loadHtml(html: String, domain: String? = null) {
-        domain?.let {
-            val baseUrl = "https://$it"
-
-            loadDataWithBaseURL(
-                baseUrl,
-                html,
-                "text/html; charset=utf-8",
-                "utf-8",
-                baseUrl
-            )
-        } ?: kotlin.run {
+        if (domain.isNullOrBlank()) {
             loadData(
                 Base64.encodeToString(html.toByteArray(), Base64.NO_PADDING),
                 "text/html",
                 "base64"
+            )
+        } else {
+            loadDataWithBaseURL(
+                domain,
+                html,
+                "text/html; charset=utf-8",
+                "utf-8",
+                domain
             )
         }
     }
