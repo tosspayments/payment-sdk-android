@@ -12,7 +12,6 @@ import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
-import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo

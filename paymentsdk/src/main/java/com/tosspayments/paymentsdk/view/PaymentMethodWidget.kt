@@ -8,8 +8,6 @@ import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     PaymentWidgetContainer(context, attrs) {
-    private var methodRenderCalled = false
-
     private val redirectOption: (redirectUrl: String?) -> String? = {
         it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
     }
@@ -69,7 +67,11 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     }
 
     @JvmOverloads
-    fun updateAmount(amount: Number, description: String = "") {
-
+    internal fun updateAmount(amount: Number, description: String = "") {
+        if (methodRenderCalled) {
+            evaluateJavascript("paymentMethods.updateAmount(${amount}, '${description}');")
+        } else {
+            throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
+        }
     }
 }

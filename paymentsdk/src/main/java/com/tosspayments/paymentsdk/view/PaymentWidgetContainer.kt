@@ -16,6 +16,8 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
     FrameLayout(context, attrs) {
     protected val paymentWebView: PaymentWebView
 
+    protected var methodRenderCalled = false
+
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
@@ -65,7 +67,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         )
     }
 
-    internal fun setHeight(heightPx: Float?) {
+    internal fun updateHeight(heightPx: Float?) {
         paymentWebView.setHeight(heightPx)
     }
 }

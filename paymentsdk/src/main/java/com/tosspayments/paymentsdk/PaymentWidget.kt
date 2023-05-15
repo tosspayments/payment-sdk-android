@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +15,8 @@ import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.view.PaymentMethodWidget
+import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
+import org.json.JSONObject
 
 class PaymentWidget(
     activity: AppCompatActivity,
@@ -21,6 +24,7 @@ class PaymentWidget(
     private val customerKey: String,
     options: PaymentWidgetOptions? = null
 ) {
+    private val eventHandlerMap = mutableMapOf<String, (String) -> Unit>()
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
     private val redirectUrl = options?.brandPayOption?.redirectUrl
@@ -44,6 +48,34 @@ class PaymentWidget(
                 )
             }
         }
+
+    private val methodWidgetJavascriptInterface = object : PaymentWidgetJavascriptInterface() {
+        @JavascriptInterface
+        fun updateHeight(height: String?) {
+            Log.d("Kangdroid", "updateHeight : $height")
+        }
+
+        @JavascriptInterface
+        override fun message(json: String) {
+            handleJavascriptMessage(methodWidget, json)
+        }
+
+        @JavascriptInterface
+        fun requestPayments(html: String) {
+            methodWidget?.context?.let {
+                handlePaymentDom(it, html)
+            }
+        }
+
+        @JavascriptInterface
+        fun requestHTML(html: String) {
+            methodWidget?.context?.let {
+                htmlRequestActivityResult.launch(
+                    TossPaymentsWebActivity.getIntent(it, domain, html)
+                )
+            }
+        }
+    }
 
     private var orderId: String = ""
 
@@ -83,7 +115,7 @@ class PaymentWidget(
         }
     }
 
-    @Deprecated("This function is no longer needed", level = DeprecationLevel.WARNING)
+    @Deprecated("This function is no longer needed", level = DeprecationLevel.ERROR)
     fun setMethodWidget(methodWidget: PaymentMethodWidget) {
         this.methodWidget = methodWidget
     }
@@ -94,7 +126,7 @@ class PaymentWidget(
     @Deprecated(
         "This function is no longer needed. Use renderPaymentMethods instead.",
         replaceWith = ReplaceWith("renderPaymentMethods()"),
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
     fun renderPaymentMethodWidget(amount: Number, orderId: String) {
         methodWidget?.renderPaymentMethods(
@@ -107,19 +139,7 @@ class PaymentWidget(
 
     fun renderPaymentMethods(methodWidget: PaymentMethodWidget, amount: Number) {
         this.methodWidget = methodWidget.apply {
-            addJavascriptInterface(object : PaymentWidgetJavascriptInterface(this) {
-                @JavascriptInterface
-                fun requestPayments(html: String) {
-                    handlePaymentDom(context, html)
-                }
-
-                @JavascriptInterface
-                fun requestHTML(html: String) {
-                    htmlRequestActivityResult.launch(
-                        TossPaymentsWebActivity.getIntent(context, domain, html)
-                    )
-                }
-            })
+            addJavascriptInterface(methodWidgetJavascriptInterface)
         }
 
         methodWidget.renderPaymentMethods(
@@ -128,6 +148,30 @@ class PaymentWidget(
             amount,
             redirectUrl
         )
+    }
+
+    private fun handleJavascriptMessage(widgetContainer: PaymentWidgetContainer?, json: String) {
+        try {
+            val jsonObject = JSONObject(json)
+            val eventName = jsonObject.getString("name")
+            val params = jsonObject.getJSONObject("params")
+
+            Log.d("Kangdroid", "event : $eventName, params : $params")
+
+            when (eventName) {
+                "updateHeight" -> {
+                    updateHeight(widgetContainer, params.getInt("height").toFloat())
+                }
+                else -> {
+                    eventHandlerMap[eventName]?.invoke(params.getString("paymentMethodKey"))
+                }
+            }
+        } catch (ignore: Exception) {
+        }
+    }
+
+    private fun updateHeight(widgetContainer: PaymentWidgetContainer?, height: Float?) {
+        widgetContainer?.updateHeight(height)
     }
 
     @JvmOverloads
@@ -179,6 +223,32 @@ class PaymentWidget(
         } ?: kotlin.run {
             this.requestCode = null
             throw IllegalAccessException("Payment method widget is not set")
+        }
+    }
+
+    @JvmOverloads
+    fun updateAmount(amount: Number, description: String = "") {
+        methodWidget?.updateAmount(amount, description)
+            ?: throw IllegalAccessException("Payment method widget is not set")
+    }
+
+    fun onCustomRequested(paymentMethodKeyHandler: (String) -> Unit) {
+        addMethodWidgetEventListener("customRequest", paymentMethodKeyHandler)
+    }
+
+    fun onCustomPaymentMethodSelect(paymentMethodKeyHandler: (String) -> Unit) {
+        addMethodWidgetEventListener("customPaymentMethodSelect", paymentMethodKeyHandler)
+    }
+
+    fun onCustomPaymentMethodUnselected(paymentMethodKeyHandler: (String) -> Unit) {
+        addMethodWidgetEventListener("customPaymentMethodUnselect", paymentMethodKeyHandler)
+    }
+
+    fun addMethodWidgetEventListener(eventName: String, paymentMethodKeyHandler: (String) -> Unit) {
+        methodWidget?.let {
+            eventHandlerMap[eventName] = paymentMethodKeyHandler
+        } ?: kotlin.run {
+            throw IllegalAccessException("Payment method widget is not rendered.")
         }
     }
 }
