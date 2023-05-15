@@ -8,10 +8,6 @@ import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 @SuppressLint("SetJavaScriptEnabled")
 class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
     PaymentWidgetContainer(context, attrs) {
-    private val redirectOption: (redirectUrl: String?) -> String? = {
-        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
-    }
-
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,
@@ -19,25 +15,9 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         domain: String? = null,
         redirectUrl: String? = null
     ) {
-        val paymentWidgetConstructor =
-            "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
-
-        val renderMethodScript = StringBuilder()
-            .appendLine("var paymentWidget = $paymentWidgetConstructor;")
-            .appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
-            .toString()
-
-        paymentWebView.loadHtml(
-            domain,
-            "tosspayment_widget.html",
-            {
-                evaluateJavascript(renderMethodScript)
-                methodRenderCalled = true
-            },
-            {
-                handleOverrideUrl(this)
-            }
-        )
+        renderWidget(clientKey, customerKey, domain, redirectUrl) {
+            appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
+        }
     }
 
     @Throws(IllegalAccessException::class)

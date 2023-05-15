@@ -14,9 +14,23 @@ import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 
 sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
-    protected val paymentWebView: PaymentWebView
+    private val paymentWebView: PaymentWebView
+
+    protected val redirectOption: (redirectUrl: String?) -> String? = {
+        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
+    }
 
     protected var methodRenderCalled = false
+
+    companion object {
+        internal const val EVENT_NAME = "name"
+        internal const val EVENT_PARAMS = "params"
+
+        internal const val EVENT_NAME_UPDATE_HEIGHT = "updateHeight"
+
+        internal const val EVENT_PARAM_PAYMENT_METHOD_KEY = "paymentMethodKey"
+        internal const val EVENT_PARAM_HEIGHT = "height"
+    }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_payment_widget, this, true).run {
@@ -30,7 +44,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         }
     }
 
-    protected fun handleOverrideUrl(requestedUri: Uri?): Boolean {
+    private fun handleOverrideUrl(requestedUri: Uri?): Boolean {
         return requestedUri?.let { uri ->
             val requestedUrl = uri.toString()
 
@@ -54,6 +68,34 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
                 else -> false
             }
         } ?: false
+    }
+
+    protected fun renderWidget(
+        clientKey: String,
+        customerKey: String,
+        domain: String?,
+        redirectUrl: String?,
+        renderScript: StringBuilder.() -> StringBuilder
+    ) {
+        val paymentWidgetConstructor =
+            "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
+
+        val renderMethodScript = StringBuilder()
+            .appendLine("var paymentWidget = $paymentWidgetConstructor;")
+            .renderScript()
+            .toString()
+
+        paymentWebView.loadHtml(
+            domain,
+            "tosspayment_widget.html",
+            {
+                evaluateJavascript(renderMethodScript)
+                methodRenderCalled = true
+            },
+            {
+                handleOverrideUrl(this)
+            }
+        )
     }
 
     fun evaluateJavascript(script: String) {

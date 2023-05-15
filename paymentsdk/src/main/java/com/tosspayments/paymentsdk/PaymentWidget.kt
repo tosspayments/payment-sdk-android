@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,11 +49,6 @@ class PaymentWidget(
         }
 
     private val methodWidgetJavascriptInterface = object : PaymentWidgetJavascriptInterface() {
-        @JavascriptInterface
-        fun updateHeight(height: String?) {
-            Log.d("Kangdroid", "updateHeight : $height")
-        }
-
         @JavascriptInterface
         override fun message(json: String) {
             handleJavascriptMessage(methodWidget, json)
@@ -117,7 +111,6 @@ class PaymentWidget(
 
     @Deprecated("This function is no longer needed", level = DeprecationLevel.ERROR)
     fun setMethodWidget(methodWidget: PaymentMethodWidget) {
-        this.methodWidget = methodWidget
     }
 
     /**
@@ -125,16 +118,10 @@ class PaymentWidget(
      */
     @Deprecated(
         "This function is no longer needed. Use renderPaymentMethods instead.",
-        replaceWith = ReplaceWith("renderPaymentMethods()"),
+        replaceWith = ReplaceWith("com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(methodWidget, amount)"),
         level = DeprecationLevel.ERROR
     )
     fun renderPaymentMethodWidget(amount: Number, orderId: String) {
-        methodWidget?.renderPaymentMethods(
-            clientKey,
-            customerKey,
-            amount,
-            redirectUrl
-        )
     }
 
     fun renderPaymentMethods(methodWidget: PaymentMethodWidget, amount: Number) {
@@ -153,17 +140,18 @@ class PaymentWidget(
     private fun handleJavascriptMessage(widgetContainer: PaymentWidgetContainer?, json: String) {
         try {
             val jsonObject = JSONObject(json)
-            val eventName = jsonObject.getString("name")
-            val params = jsonObject.getJSONObject("params")
-
-            Log.d("Kangdroid", "event : $eventName, params : $params")
+            val eventName = jsonObject.getString(PaymentWidgetContainer.EVENT_NAME)
+            val params = jsonObject.getJSONObject(PaymentWidgetContainer.EVENT_PARAMS)
 
             when (eventName) {
-                "updateHeight" -> {
-                    updateHeight(widgetContainer, params.getInt("height").toFloat())
+                PaymentWidgetContainer.EVENT_NAME_UPDATE_HEIGHT -> {
+                    updateHeight(
+                        widgetContainer,
+                        params.getDouble(PaymentWidgetContainer.EVENT_PARAM_HEIGHT).toFloat()
+                    )
                 }
                 else -> {
-                    eventHandlerMap[eventName]?.invoke(params.getString("paymentMethodKey"))
+                    eventHandlerMap[eventName]?.invoke(params.getString(PaymentWidgetContainer.EVENT_PARAM_PAYMENT_METHOD_KEY))
                 }
             }
         } catch (ignore: Exception) {
@@ -250,5 +238,9 @@ class PaymentWidget(
         } ?: kotlin.run {
             throw IllegalAccessException("Payment method widget is not rendered.")
         }
+    }
+
+    fun renderAgreement() {
+
     }
 }
