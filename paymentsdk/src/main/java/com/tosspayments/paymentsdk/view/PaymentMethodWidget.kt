@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.URLUtil
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
@@ -130,8 +131,18 @@ class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
         paymentWebView.evaluateJavascript(script)
     }
 
-    override fun addJavascriptInterface(javascriptInterface: PaymentWebViewJavascriptInterface) {
-        paymentWebView.addJavascriptInterface(javascriptInterface)
+    override fun addJavascriptInterface() {
+        paymentWebView.addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
+            @JavascriptInterface
+            fun message(message: Any) {
+
+            }
+
+            @JavascriptInterface
+            fun updateHeight(height: String?) {
+                setHeight(height?.toFloat())
+            }
+        })
     }
 
     override fun setHeight(heightPx: Float?) {

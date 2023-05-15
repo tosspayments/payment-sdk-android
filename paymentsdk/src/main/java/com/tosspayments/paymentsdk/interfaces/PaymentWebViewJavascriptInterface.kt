@@ -1,8 +1,11 @@
 package com.tosspayments.paymentsdk.interfaces
 
 import android.webkit.JavascriptInterface
+import com.tosspayments.paymentsdk.view.PaymentWebView
 
-interface PaymentWebViewJavascriptInterface {
+open class PaymentWebViewJavascriptInterface(private val paymentWebView: PaymentWebView) {
     @JavascriptInterface
-    fun message(message: Any)
+    fun updateHeight(height: String?) {
+        paymentWebView.setHeight(height?.toFloat())
+    }
 }

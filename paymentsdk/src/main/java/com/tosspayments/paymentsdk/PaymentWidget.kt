@@ -98,7 +98,7 @@ class PaymentWidget(
         this.methodWidget = methodWidget.apply {
             addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
                 @JavascriptInterface
-                override fun message(message: Any) {
+                fun message(message: Any) {
 
                 }
 

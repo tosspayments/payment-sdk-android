@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
+import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.R
-import com.tosspayments.paymentsdk.interfaces.PaymentWidgetCallback
+import com.tosspayments.paymentsdk.interfaces.PaymentWebViewJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
-import com.tosspayments.paymentsdk.view.PaymentWebView.Companion.JS_INTERFACE_NAME
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
@@ -26,29 +26,19 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.view_tosspayment)
 
-        initViews(intent)
+        initViews()
         handleIntent(intent)
     }
 
-    private fun initViews(intent: Intent?) {
+    private fun initViews() {
         webView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-            val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
-
-            addJavascriptInterface(
-                PaymentWebView.PaymentWebViewJavascriptInterface(object :
-                    PaymentWidgetCallback {
-                    override fun onPostPaymentHtml(html: String, domain: String?) {
-                    }
-
-                    override fun onHtmlRequested(html: String, domain: String?) {
-                    }
-
-                    override fun onSuccess(response: String, domain: String?) {
-                        setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
-                        finish()
-                    }
-                }, domain), JS_INTERFACE_NAME
-            )
+            addJavascriptInterface(object : PaymentWebViewJavascriptInterface {
+                @JavascriptInterface
+                fun success(response: String) {
+                    setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
+                    finish()
+                }
+            })
         }
     }
 
