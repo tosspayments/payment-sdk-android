@@ -41,7 +41,7 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
         val host = if (domain.isNullOrBlank()) {
             "https://appassets.androidplatform.net"
         } else {
-            domain
+            "https://$domain"
         }
 
         val htmlFileUrl = "${host}/assets/$htmlFileName"
