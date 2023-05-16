@@ -1,13 +1,17 @@
 package com.tosspayments.paymentsdk.view
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 
-@SuppressLint("SetJavaScriptEnabled")
-class PaymentMethodWidget(context: Context, attrs: AttributeSet? = null) :
+class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     PaymentWidgetContainer(context, attrs) {
+
+    companion object {
+        internal const val EVENT_NAME_CUSTOM_REQUESTED = "customRequest"
+        internal const val EVENT_NAME_CUSTOM_METHOD_SELECTED = "customPaymentMethodSelect"
+        internal const val EVENT_NAME_CUSTOM_METHOD_UNSELECTED = "customPaymentMethodUnselect"
+    }
     internal fun renderPaymentMethods(
         clientKey: String,
         customerKey: String,

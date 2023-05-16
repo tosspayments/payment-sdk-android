@@ -153,13 +153,6 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                     }
                 }, PaymentWebView.INTERFACE_NAME_PAYMENT)
 
-//                addJavascriptInterface(object : PaymentWidgetJavascriptInterface(this) {
-//                    @JavascriptInterface
-//                    fun onSuccess(response: String, domain: String?) {
-//                        callback?.onSuccess(response)
-//                    }
-//                }, PaymentWebView.INTERFACE_NAME_WIDGET)
-
                 loadUrl("file:///android_asset/tosspayment.html")
             }
         }

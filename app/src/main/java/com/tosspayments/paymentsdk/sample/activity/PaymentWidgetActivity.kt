@@ -4,17 +4,24 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
-import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
-import com.tosspayments.paymentsdk.view.PaymentMethodWidget
+import com.tosspayments.paymentsdk.view.Agreement
+import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
+    private lateinit var methodWidget: PaymentMethod
+    private lateinit var agreementWidget: Agreement
+    private lateinit var paymentCta: Button
+
     companion object {
+        private const val TAG = "PaymentWidgetActivity"
+
         private const val EXTRA_KEY_AMOUNT = "extraKeyAmount"
         private const val EXTRA_KEY_CLIENT_KEY = "extraKeyClientKey"
         private const val EXTRA_KEY_CUSTOMER_KEY = "extraKeyCustomerKey"
@@ -55,8 +62,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_payment_widget)
 
+        initViews()
+
         intent?.run {
-            initViews(
+            initPaymentWidget(
                 getLongExtra(EXTRA_KEY_AMOUNT, 0),
                 getStringExtra(EXTRA_KEY_CLIENT_KEY).orEmpty(),
                 getStringExtra(EXTRA_KEY_CUSTOMER_KEY).orEmpty(),
@@ -68,7 +77,13 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initViews(
+    private fun initViews() {
+        methodWidget = findViewById(R.id.payment_widget)
+        agreementWidget = findViewById(R.id.agreement_widget)
+        paymentCta = findViewById(R.id.request_payment_cta)
+    }
+
+    private fun initPaymentWidget(
         amount: Long,
         clientKey: String,
         customerKey: String,
@@ -80,22 +95,48 @@ class PaymentWidgetActivity : AppCompatActivity() {
             activity = this@PaymentWidgetActivity,
             clientKey = clientKey,
             customerKey = customerKey,
-            options = redirectUrl?.let {
+            redirectUrl?.let {
                 PaymentWidgetOptions.Builder()
                     .brandPayOption(redirectUrl = it)
                     .build()
             }
         )
 
-        val methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget)
-        paymentWidget.renderPaymentMethods(methodWidget, amount)
-
-        findViewById<Button>(R.id.request_payment_cta).setOnClickListener {
+        paymentCta.setOnClickListener {
             paymentWidget.requestPayment(
                 paymentResultLauncher = tossPaymentActivityResult,
                 orderId = orderId,
                 orderName = orderName
             )
+        }
+
+        paymentWidget.run {
+            renderPaymentMethods(methodWidget, amount)
+            renderAgreement(agreementWidget)
+
+            addMethodWidgetEventListener(object : PaymentMethodCallback() {
+                override fun onCustomRequested(paymentMethodKey: String) {
+                    Log.d(TAG, "onCustomRequested : $paymentMethodKey")
+                }
+
+                override fun onCustomPaymentMethodSelected(paymentMethodKey: String) {
+                    Log.d(TAG, "onCustomPaymentMethodSelected : $paymentMethodKey")
+                }
+
+                override fun onCustomPaymentMethodUnselected(paymentMethodKey: String) {
+                    Log.d(TAG, "onCustomPaymentMethodUnselected : $paymentMethodKey")
+                }
+            })
+
+            onAgreementStatusChanged(object : AgreementCallback {
+                override fun onAgreementStatusChanged(agreementStatus: AgreementStatus) {
+                    Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
+
+                    runOnUiThread {
+                        paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                    }
+                }
+            })
         }
     }
 

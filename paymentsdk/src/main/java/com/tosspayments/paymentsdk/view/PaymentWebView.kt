@@ -20,7 +20,6 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
 
     companion object {
         const val INTERFACE_NAME_PAYMENT = "TossPayment"
-        const val INTERFACE_NAME_WIDGET = "PaymentWidgetAndroidSDK"
     }
 
     init {
@@ -99,10 +98,6 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
                 domain
             )
         }
-    }
-
-    internal fun evaluateJavascript(script: String) {
-        evaluateJavascript("javascript:$script", null)
     }
 
     internal fun setHeight(heightPx: Float?) {

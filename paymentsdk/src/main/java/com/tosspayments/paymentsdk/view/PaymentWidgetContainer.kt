@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.webkit.URLUtil
+import android.webkit.ValueCallback
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
@@ -23,6 +24,8 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
     protected var methodRenderCalled = false
 
     companion object {
+        private const val INTERFACE_NAME_WIDGET = "PaymentWidgetAndroidSDK"
+
         internal const val EVENT_NAME = "name"
         internal const val EVENT_PARAMS = "params"
 
@@ -73,16 +76,16 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
     protected fun renderWidget(
         clientKey: String,
         customerKey: String,
-        domain: String?,
-        redirectUrl: String?,
-        renderScript: StringBuilder.() -> StringBuilder
+        domain: String? = null,
+        redirectUrl: String? = null,
+        appendWidgetRenderScript: StringBuilder.() -> StringBuilder
     ) {
         val paymentWidgetConstructor =
             "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
 
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
-            .renderScript()
+            .appendWidgetRenderScript()
             .toString()
 
         paymentWebView.loadHtml(
@@ -98,14 +101,14 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         )
     }
 
-    fun evaluateJavascript(script: String) {
-        paymentWebView.evaluateJavascript(script)
+    fun evaluateJavascript(script: String, resultCallback: ValueCallback<String>? = null) {
+        paymentWebView.evaluateJavascript("javascript:$script", resultCallback)
     }
 
     fun addJavascriptInterface(javascriptInterface: PaymentWidgetJavascriptInterface) {
         paymentWebView.addJavascriptInterface(
             javascriptInterface,
-            PaymentWebView.INTERFACE_NAME_WIDGET
+            INTERFACE_NAME_WIDGET
         )
     }
 

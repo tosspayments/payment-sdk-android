@@ -40,19 +40,7 @@ android {
     }
 
     buildTypes {
-        debug {
-            buildConfigField("String", "CUSTOMER_KEY", properties.getProperty("customerKey"))
-            buildConfigField("String", "CLIENT_KEY", properties.getProperty("clientKey"))
-            buildConfigField("String", "REDIRECT_URL", properties.getProperty("redirectUrl"))
-            buildConfigField("String", "ORDER_ID", properties.getProperty("orderId"))
-        }
-
         release {
-            buildConfigField("String", "CUSTOMER_KEY", properties.getProperty("customerKey"))
-            buildConfigField("String", "CLIENT_KEY", properties.getProperty("clientKey"))
-            buildConfigField("String", "REDIRECT_URL", properties.getProperty("redirectUrl"))
-            buildConfigField("String", "ORDER_ID", properties.getProperty("orderId"))
-
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }

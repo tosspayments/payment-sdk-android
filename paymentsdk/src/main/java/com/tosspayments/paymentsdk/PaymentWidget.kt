@@ -10,10 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
-import com.tosspayments.paymentsdk.model.Constants
-import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
-import com.tosspayments.paymentsdk.model.TossPaymentResult
-import com.tosspayments.paymentsdk.view.PaymentMethodWidget
+import com.tosspayments.paymentsdk.model.*
+import com.tosspayments.paymentsdk.view.Agreement
+import com.tosspayments.paymentsdk.view.PaymentMethod
 import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
 import org.json.JSONObject
 
@@ -21,23 +20,22 @@ class PaymentWidget(
     activity: AppCompatActivity,
     private val clientKey: String,
     private val customerKey: String,
-    options: PaymentWidgetOptions? = null
+    paymentOptions: PaymentWidgetOptions? = null
 ) {
-    private val eventHandlerMap = mutableMapOf<String, (String) -> Unit>()
     private val tossPayments: TossPayments = TossPayments(clientKey)
 
-    private val redirectUrl = options?.brandPayOption?.redirectUrl
+    private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
     private val domain = try {
-        Uri.parse(redirectUrl).let {
-            "${it.authority}${it.host}"
+        if (!redirectUrl.isNullOrBlank()) {
+            Uri.parse(redirectUrl).let {
+                "${it.authority}${it.host}"
+            }
+        } else {
+            null
         }
     } catch (e: Exception) {
         null
     }
-
-    private var methodWidget: PaymentMethodWidget? = null
-    private var requestCode: Int? = null
-    private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
     private val htmlRequestActivityResult =
         activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -48,30 +46,61 @@ class PaymentWidget(
             }
         }
 
-    private val methodWidgetJavascriptInterface = object : PaymentWidgetJavascriptInterface() {
-        @JavascriptInterface
-        override fun message(json: String) {
-            handleJavascriptMessage(methodWidget, json)
+    private val messageEventHandler: (String, JSONObject) -> Unit = { eventName, params ->
+        val paymentMethodKey = try {
+            params.getString(
+                PaymentWidgetContainer.EVENT_PARAM_PAYMENT_METHOD_KEY
+            ).orEmpty()
+        } catch (e: Exception) {
+            ""
         }
 
-        @JavascriptInterface
-        fun requestPayments(html: String) {
-            methodWidget?.context?.let {
-                handlePaymentDom(it, html)
+        when (eventName) {
+            PaymentMethod.EVENT_NAME_CUSTOM_REQUESTED -> {
+                methodEventCallback?.onCustomRequested(paymentMethodKey)
             }
-        }
-
-        @JavascriptInterface
-        fun requestHTML(html: String) {
-            methodWidget?.context?.let {
-                htmlRequestActivityResult.launch(
-                    TossPaymentsWebActivity.getIntent(it, domain, html)
-                )
+            PaymentMethod.EVENT_NAME_CUSTOM_METHOD_SELECTED -> {
+                methodEventCallback?.onCustomPaymentMethodSelected(paymentMethodKey)
+            }
+            PaymentMethod.EVENT_NAME_CUSTOM_METHOD_UNSELECTED -> {
+                methodEventCallback?.onCustomPaymentMethodUnselected(paymentMethodKey)
+            }
+            Agreement.EVENT_NAME_UPDATE_AGREEMENT_STATUS -> {
+                kotlin.runCatching { AgreementStatus.fromJson(params) }.getOrNull()?.let {
+                    agreementCallback?.onAgreementStatusChanged(it)
+                }
             }
         }
     }
 
+    private val methodWidgetJavascriptInterface
+        get() = object : PaymentWidgetJavascriptInterface(methodWidget, messageEventHandler) {
+            @JavascriptInterface
+            fun requestPayments(html: String) {
+                methodWidget?.context?.let {
+                    handlePaymentDom(it, html)
+                }
+            }
+
+            @JavascriptInterface
+            fun requestHTML(html: String) {
+                methodWidget?.context?.let {
+                    htmlRequestActivityResult.launch(
+                        TossPaymentsWebActivity.getIntent(it, domain, html)
+                    )
+                }
+            }
+        }
+
+    private var methodWidget: PaymentMethod? = null
+    private var agreementWidget: Agreement? = null
+
     private var orderId: String = ""
+    private var requestCode: Int? = null
+    private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
+
+    private var methodEventCallback: PaymentMethodCallback? = null
+    private var agreementCallback: AgreementCallback? = null
 
     companion object {
         @JvmStatic
@@ -110,7 +139,7 @@ class PaymentWidget(
     }
 
     @Deprecated("This function is no longer needed", level = DeprecationLevel.ERROR)
-    fun setMethodWidget(methodWidget: PaymentMethodWidget) {
+    fun setMethodWidget(methodWidget: PaymentMethod) {
     }
 
     /**
@@ -124,42 +153,20 @@ class PaymentWidget(
     fun renderPaymentMethodWidget(amount: Number, orderId: String) {
     }
 
-    fun renderPaymentMethods(methodWidget: PaymentMethodWidget, amount: Number) {
-        this.methodWidget = methodWidget.apply {
+    fun renderPaymentMethods(
+        method: PaymentMethod,
+        amount: Number
+    ) {
+        this.methodWidget = method.apply {
             addJavascriptInterface(methodWidgetJavascriptInterface)
         }
 
-        methodWidget.renderPaymentMethods(
+        method.renderPaymentMethods(
             clientKey,
             customerKey,
             amount,
             redirectUrl
         )
-    }
-
-    private fun handleJavascriptMessage(widgetContainer: PaymentWidgetContainer?, json: String) {
-        try {
-            val jsonObject = JSONObject(json)
-            val eventName = jsonObject.getString(PaymentWidgetContainer.EVENT_NAME)
-            val params = jsonObject.getJSONObject(PaymentWidgetContainer.EVENT_PARAMS)
-
-            when (eventName) {
-                PaymentWidgetContainer.EVENT_NAME_UPDATE_HEIGHT -> {
-                    updateHeight(
-                        widgetContainer,
-                        params.getDouble(PaymentWidgetContainer.EVENT_PARAM_HEIGHT).toFloat()
-                    )
-                }
-                else -> {
-                    eventHandlerMap[eventName]?.invoke(params.getString(PaymentWidgetContainer.EVENT_PARAM_PAYMENT_METHOD_KEY))
-                }
-            }
-        } catch (ignore: Exception) {
-        }
-    }
-
-    private fun updateHeight(widgetContainer: PaymentWidgetContainer?, height: Float?) {
-        widgetContainer?.updateHeight(height)
     }
 
     @JvmOverloads
@@ -220,27 +227,30 @@ class PaymentWidget(
             ?: throw IllegalAccessException("Payment method widget is not set")
     }
 
-    fun onCustomRequested(paymentMethodKeyHandler: (String) -> Unit) {
-        addMethodWidgetEventListener("customRequest", paymentMethodKeyHandler)
-    }
-
-    fun onCustomPaymentMethodSelect(paymentMethodKeyHandler: (String) -> Unit) {
-        addMethodWidgetEventListener("customPaymentMethodSelect", paymentMethodKeyHandler)
-    }
-
-    fun onCustomPaymentMethodUnselected(paymentMethodKeyHandler: (String) -> Unit) {
-        addMethodWidgetEventListener("customPaymentMethodUnselect", paymentMethodKeyHandler)
-    }
-
-    fun addMethodWidgetEventListener(eventName: String, paymentMethodKeyHandler: (String) -> Unit) {
-        methodWidget?.let {
-            eventHandlerMap[eventName] = paymentMethodKeyHandler
+    @Throws(IllegalAccessException::class)
+    fun addMethodWidgetEventListener(callback: PaymentMethodCallback) {
+        methodWidget?.run {
+            methodEventCallback = callback
         } ?: kotlin.run {
-            throw IllegalAccessException("Payment method widget is not rendered.")
+            methodEventCallback = null
+            throw IllegalAccessException("PaymentMethod is not rendered.")
         }
     }
 
-    fun renderAgreement() {
+    fun renderAgreement(agreement: Agreement) {
+        this.agreementWidget = agreement
 
+        agreement.apply {
+            addJavascriptInterface(PaymentWidgetJavascriptInterface(agreement, messageEventHandler))
+        }.renderAgreement(clientKey, customerKey, domain)
+    }
+
+    fun onAgreementStatusChanged(callback: AgreementCallback) {
+        agreementWidget?.run {
+            agreementCallback = callback
+        } ?: kotlin.run {
+            agreementCallback = null
+            throw IllegalAccessException("Agreement is not rendered.")
+        }
     }
 }
