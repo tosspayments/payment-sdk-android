@@ -14,10 +14,9 @@ class Agreement(context: Context, attrs: AttributeSet? = null) :
 
     internal fun renderAgreement(
         clientKey: String,
-        customerKey: String,
-        domain: String? = null
+        customerKey: String
     ) {
-        renderWidget(clientKey, customerKey, domain) {
+        renderWidget(clientKey, customerKey) {
             appendLine("const paymentAgreement = paymentWidget.renderAgreement('#agreement');")
         }
     }

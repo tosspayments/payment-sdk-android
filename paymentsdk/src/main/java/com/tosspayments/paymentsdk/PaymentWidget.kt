@@ -165,6 +165,7 @@ class PaymentWidget(
             clientKey,
             customerKey,
             amount,
+            domain,
             redirectUrl
         )
     }
@@ -242,7 +243,7 @@ class PaymentWidget(
 
         agreement.apply {
             addJavascriptInterface(PaymentWidgetJavascriptInterface(agreement, messageEventHandler))
-        }.renderAgreement(clientKey, customerKey, domain)
+        }.renderAgreement(clientKey, customerKey)
     }
 
     fun onAgreementStatusChanged(callback: AgreementCallback) {
