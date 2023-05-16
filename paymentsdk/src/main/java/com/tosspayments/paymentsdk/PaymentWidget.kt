@@ -28,7 +28,7 @@ class PaymentWidget(
     private val domain = try {
         if (!redirectUrl.isNullOrBlank()) {
             Uri.parse(redirectUrl).let {
-                "${it.authority}${it.host}"
+                "https://${it.host}"
             }
         } else {
             null
