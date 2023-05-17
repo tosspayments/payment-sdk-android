@@ -7,14 +7,19 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.extension.toast
+import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
+    private val paymentWidgetViewModel : PaymentWidgetViewModel by viewModels()
+
     private lateinit var methodWidget: PaymentMethod
     private lateinit var agreementWidget: Agreement
     private lateinit var paymentCta: Button
@@ -116,15 +121,24 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
             addMethodWidgetEventListener(object : PaymentMethodCallback() {
                 override fun onCustomRequested(paymentMethodKey: String) {
-                    Log.d(TAG, "onCustomRequested : $paymentMethodKey")
+                    val message = "onCustomRequested : $paymentMethodKey"
+                    Log.d(TAG, message)
+
+                    toast(message)
                 }
 
                 override fun onCustomPaymentMethodSelected(paymentMethodKey: String) {
-                    Log.d(TAG, "onCustomPaymentMethodSelected : $paymentMethodKey")
+                    val message = "onCustomPaymentMethodSelected : $paymentMethodKey"
+                    Log.d(TAG, message)
+
+                    toast(message)
                 }
 
                 override fun onCustomPaymentMethodUnselected(paymentMethodKey: String) {
-                    Log.d(TAG, "onCustomPaymentMethodUnselected : $paymentMethodKey")
+                    val message = "onCustomPaymentMethodUnselected : $paymentMethodKey"
+                    Log.d(TAG, message)
+
+                    toast(message)
                 }
             })
 
