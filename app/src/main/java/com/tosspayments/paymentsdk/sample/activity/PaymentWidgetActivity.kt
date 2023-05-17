@@ -6,23 +6,53 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.extension.toast
-import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetViewModel
 import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
-    private val paymentWidgetViewModel : PaymentWidgetViewModel by viewModels()
-
     private lateinit var methodWidget: PaymentMethod
     private lateinit var agreementWidget: Agreement
     private lateinit var paymentCta: Button
+
+    private val paymentEventListener
+        get() = object : PaymentMethodEventListener() {
+            override fun onCustomRequested(paymentMethodKey: String) {
+                val message = "onCustomRequested : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+
+            override fun onCustomPaymentMethodSelected(paymentMethodKey: String) {
+                val message = "onCustomPaymentMethodSelected : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+
+            override fun onCustomPaymentMethodUnselected(paymentMethodKey: String) {
+                val message = "onCustomPaymentMethodUnselected : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+        }
+
+    private val agreementStatusListener
+        get() = object : AgreementStatusListener {
+            override fun onAgreementStatusChanged(agreementStatus: AgreementStatus) {
+                Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
+
+                runOnUiThread {
+                    paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                }
+            }
+        }
 
     companion object {
         private const val TAG = "PaymentWidgetActivity"
@@ -52,16 +82,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 .putExtra(EXTRA_KEY_REDIRECT_URL, redirectUrl)
         }
     }
-
-    private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
-        PaymentWidget.getPaymentResultLauncher(
-            this,
-            { success ->
-                handlePaymentSuccessResult(success)
-            },
-            { fail ->
-                handlePaymentFailResult(fail)
-            })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -109,9 +129,17 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         paymentCta.setOnClickListener {
             paymentWidget.requestPayment(
-                paymentResultLauncher = tossPaymentActivityResult,
                 orderId = orderId,
-                orderName = orderName
+                orderName = orderName,
+                paymentCallback = object : PaymentCallback {
+                    override fun onPaymentSuccess(success: TossPaymentResult.Success) {
+                        handlePaymentSuccessResult(success)
+                    }
+
+                    override fun onPaymentFailed(fail: TossPaymentResult.Fail) {
+                        handlePaymentFailResult(fail)
+                    }
+                }
             )
         }
 
@@ -119,47 +147,17 @@ class PaymentWidgetActivity : AppCompatActivity() {
             renderPaymentMethods(methodWidget, amount)
             renderAgreement(agreementWidget)
 
-            addMethodWidgetEventListener(object : PaymentMethodCallback() {
-                override fun onCustomRequested(paymentMethodKey: String) {
-                    val message = "onCustomRequested : $paymentMethodKey"
-                    Log.d(TAG, message)
-
-                    toast(message)
-                }
-
-                override fun onCustomPaymentMethodSelected(paymentMethodKey: String) {
-                    val message = "onCustomPaymentMethodSelected : $paymentMethodKey"
-                    Log.d(TAG, message)
-
-                    toast(message)
-                }
-
-                override fun onCustomPaymentMethodUnselected(paymentMethodKey: String) {
-                    val message = "onCustomPaymentMethodUnselected : $paymentMethodKey"
-                    Log.d(TAG, message)
-
-                    toast(message)
-                }
-            })
-
-            onAgreementStatusChanged(object : AgreementCallback {
-                override fun onAgreementStatusChanged(agreementStatus: AgreementStatus) {
-                    Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
-
-                    runOnUiThread {
-                        paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
-                    }
-                }
-            })
+            addPaymentMethodEventListener(paymentEventListener)
+            addAgreementStatusListener(agreementStatusListener)
         }
     }
 
     private fun handlePaymentSuccessResult(success: TossPaymentResult.Success) {
         val paymentType: String? = success.additionalParameters["paymentType"]
         if ("BRANDPAY".equals(paymentType, true)) {
-            // 브랜드페이 승인
+            // TODO: 브랜드페이 승인
         } else {
-            // 일반결제 승인 -> 추후 일반결제/브랜드페이 승인으로 Migration 예정되어있음
+            // TODO: 일반결제 승인 -> 추후 일반결제/브랜드페이 승인으로 Migration 예정되어있음
         }
 
         startActivity(

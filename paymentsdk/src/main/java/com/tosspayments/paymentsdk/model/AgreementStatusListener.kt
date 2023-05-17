@@ -1,5 +1,5 @@
 package com.tosspayments.paymentsdk.model
 
-interface AgreementCallback {
+interface AgreementStatusListener {
     fun onAgreementStatusChanged(agreementStatus: AgreementStatus)
 }

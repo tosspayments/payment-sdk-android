@@ -11,6 +11,8 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         internal const val EVENT_NAME_CUSTOM_REQUESTED = "customRequest"
         internal const val EVENT_NAME_CUSTOM_METHOD_SELECTED = "customPaymentMethodSelect"
         internal const val EVENT_NAME_CUSTOM_METHOD_UNSELECTED = "customPaymentMethodUnselect"
+
+        internal const val MESSAGE_NOT_RENDERED = "PaymentMethod is not rendered. Call 'renderPaymentMethods' method first."
     }
     internal fun renderPaymentMethods(
         clientKey: String,
@@ -46,16 +48,17 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
             evaluateJavascript(requestPaymentScript)
         } else {
-            throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
+            throw IllegalArgumentException(MESSAGE_NOT_RENDERED)
         }
     }
 
     @JvmOverloads
+    @Throws(IllegalAccessException::class)
     internal fun updateAmount(amount: Number, description: String = "") {
         if (methodRenderCalled) {
             evaluateJavascript("paymentMethods.updateAmount(${amount}, '${description}');")
         } else {
-            throw IllegalArgumentException("renderPaymentMethods method should be called before the payment requested.")
+            throw IllegalArgumentException(MESSAGE_NOT_RENDERED)
         }
     }
 }

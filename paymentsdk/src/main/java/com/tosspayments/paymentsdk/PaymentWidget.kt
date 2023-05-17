@@ -44,6 +44,16 @@ class PaymentWidget(
             }
         }
 
+    private val paymentResultLauncher: ActivityResultLauncher<Intent> =
+        TossPayments.getPaymentResultLauncher(
+            activity,
+            {
+                paymentCallback?.onPaymentSuccess(it)
+            },
+            {
+                paymentCallback?.onPaymentFailed(it)
+            })
+
     private val messageEventHandler: (String, JSONObject) -> Unit = { eventName, params ->
         val paymentMethodKey = try {
             params.getString(
@@ -55,17 +65,17 @@ class PaymentWidget(
 
         when (eventName) {
             PaymentMethod.EVENT_NAME_CUSTOM_REQUESTED -> {
-                methodEventCallback?.onCustomRequested(paymentMethodKey)
+                paymentMethodEventListener?.onCustomRequested(paymentMethodKey)
             }
             PaymentMethod.EVENT_NAME_CUSTOM_METHOD_SELECTED -> {
-                methodEventCallback?.onCustomPaymentMethodSelected(paymentMethodKey)
+                paymentMethodEventListener?.onCustomPaymentMethodSelected(paymentMethodKey)
             }
             PaymentMethod.EVENT_NAME_CUSTOM_METHOD_UNSELECTED -> {
-                methodEventCallback?.onCustomPaymentMethodUnselected(paymentMethodKey)
+                paymentMethodEventListener?.onCustomPaymentMethodUnselected(paymentMethodKey)
             }
             Agreement.EVENT_NAME_UPDATE_AGREEMENT_STATUS -> {
                 kotlin.runCatching { AgreementStatus.fromJson(params) }.getOrNull()?.let {
-                    agreementCallback?.onAgreementStatusChanged(it)
+                    agreementStatusListener?.onAgreementStatusChanged(it)
                 }
             }
         }
@@ -92,63 +102,22 @@ class PaymentWidget(
 
     private var methodWidget: PaymentMethod? = null
     private var agreementWidget: Agreement? = null
-
     private var orderId: String = ""
-    private var requestCode: Int? = null
-    private var paymentResultLauncher: ActivityResultLauncher<Intent>? = null
 
-    private var methodEventCallback: PaymentMethodCallback? = null
-    private var agreementCallback: AgreementCallback? = null
-
-    companion object {
-        @JvmStatic
-        fun getPaymentResultLauncher(
-            activity: AppCompatActivity,
-            onSuccess: (TossPaymentResult.Success) -> Unit,
-            onFailed: (TossPaymentResult.Fail) -> Unit
-        ): ActivityResultLauncher<Intent> {
-            return TossPayments.getPaymentResultLauncher(activity, onSuccess, onFailed)
-        }
-    }
+    private var paymentMethodEventListener: PaymentMethodEventListener? = null
+    private var agreementStatusListener: AgreementStatusListener? = null
+    private var paymentCallback: PaymentCallback? = null
 
     private fun handlePaymentDom(context: Context, paymentHtml: String) {
         if (paymentHtml.isNotBlank()) {
-            when {
-                requestCode != null -> {
-                    tossPayments.requestPayment(
-                        context = context,
-                        paymentHtml = paymentHtml,
-                        orderId = orderId,
-                        requestCode = requestCode!!,
-                        domain = domain
-                    )
-                }
-                paymentResultLauncher != null -> {
-                    tossPayments.requestPayment(
-                        context = context,
-                        paymentHtml = paymentHtml,
-                        orderId = orderId,
-                        paymentResultLauncher = paymentResultLauncher!!,
-                        domain = domain
-                    )
-                }
-            }
+            tossPayments.requestPayment(
+                context = context,
+                paymentHtml = paymentHtml,
+                orderId = orderId,
+                paymentResultLauncher = paymentResultLauncher,
+                domain = domain
+            )
         }
-    }
-
-    @Deprecated("This function is no longer needed", level = DeprecationLevel.ERROR)
-    fun setMethodWidget(methodWidget: PaymentMethod) {
-    }
-
-    /**
-     * This function has been deprecated because it is no longer needed. Use [renderPaymentMethods] instead.
-     */
-    @Deprecated(
-        "This function is no longer needed. Use renderPaymentMethods instead.",
-        replaceWith = ReplaceWith("com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(methodWidget, amount)"),
-        level = DeprecationLevel.ERROR
-    )
-    fun renderPaymentMethodWidget(amount: Number, orderId: String) {
     }
 
     fun renderPaymentMethods(
@@ -171,68 +140,44 @@ class PaymentWidget(
     @JvmOverloads
     @Throws(IllegalAccessException::class)
     fun requestPayment(
-        paymentResultLauncher: ActivityResultLauncher<Intent>,
         orderId: String,
         orderName: String,
         customerEmail: String? = null,
-        customerName: String? = null
+        customerName: String? = null,
+        paymentCallback: PaymentCallback
     ) {
-        methodWidget?.let {
-            this.paymentResultLauncher = paymentResultLauncher
+        try {
+            this.paymentCallback = paymentCallback
             this.orderId = orderId
 
-            it.requestPayment(
+            methodWidget?.requestPayment(
                 orderId,
                 orderName,
                 customerEmail,
                 customerName,
                 redirectUrl
             )
-        } ?: kotlin.run {
-            this.paymentResultLauncher = null
+        } catch (e: Exception) {
+            this.paymentCallback = null
             this.orderId = ""
-            throw IllegalAccessException("Payment method widget is not rendered.")
+
+            throw e
         }
     }
 
     @JvmOverloads
     @Throws(IllegalAccessException::class)
-    fun requestPayment(
-        requestCode: Int,
-        orderId: String,
-        orderName: String,
-        customerEmail: String? = null,
-        customerName: String? = null
-    ) {
-        methodWidget?.let {
-            this.requestCode = requestCode
-
-            it.requestPayment(
-                orderId,
-                orderName,
-                customerEmail,
-                customerName,
-                redirectUrl
-            )
-        } ?: kotlin.run {
-            this.requestCode = null
-            throw IllegalAccessException("Payment method widget is not set")
-        }
-    }
-
-    @JvmOverloads
     fun updateAmount(amount: Number, description: String = "") {
         methodWidget?.updateAmount(amount, description)
-            ?: throw IllegalAccessException("Payment method widget is not set")
     }
 
     @Throws(IllegalAccessException::class)
-    fun addMethodWidgetEventListener(callback: PaymentMethodCallback) {
+    fun addPaymentMethodEventListener(listener: PaymentMethodEventListener) {
         methodWidget?.run {
-            methodEventCallback = callback
+            paymentMethodEventListener = listener
         } ?: kotlin.run {
-            methodEventCallback = null
-            throw IllegalAccessException("PaymentMethod is not rendered.")
+            paymentMethodEventListener = null
+            throw IllegalAccessException(PaymentMethod.MESSAGE_NOT_RENDERED)
         }
     }
 
@@ -244,12 +189,53 @@ class PaymentWidget(
         }.renderAgreement(clientKey, customerKey)
     }
 
-    fun onAgreementStatusChanged(callback: AgreementCallback) {
+    @Throws(IllegalAccessException::class)
+    fun addAgreementStatusListener(listener: AgreementStatusListener) {
         agreementWidget?.run {
-            agreementCallback = callback
+            agreementStatusListener = listener
         } ?: kotlin.run {
-            agreementCallback = null
-            throw IllegalAccessException("Agreement is not rendered.")
+            agreementStatusListener = null
+            throw IllegalAccessException(Agreement.MESSAGE_NOT_RENDERED)
         }
+    }
+
+    @Deprecated("This function is no longer needed", level = DeprecationLevel.ERROR)
+    fun setMethodWidget(methodWidget: PaymentMethod) {
+    }
+
+    @Deprecated(
+        "This function is no longer needed. Use renderPaymentMethods instead.",
+        replaceWith = ReplaceWith("com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(methodWidget, amount)"),
+        level = DeprecationLevel.ERROR
+    )
+    fun renderPaymentMethodWidget(amount: Number, orderId: String) {
+    }
+
+    @Deprecated(
+        "This function is no longer needed. Use requestPayment instead.",
+        replaceWith = ReplaceWith("com.tosspayments.paymentsdk.PaymentWidget.requestPayment()"),
+        level = DeprecationLevel.ERROR
+    )
+    fun requestPayment(
+        paymentResultLauncher: ActivityResultLauncher<Intent>,
+        orderId: String,
+        orderName: String,
+        customerEmail: String? = null,
+        customerName: String? = null
+    ) {
+    }
+
+    @Deprecated(
+        "This function is no longer needed. Use requestPayment instead.",
+        replaceWith = ReplaceWith("com.tosspayments.paymentsdk.PaymentWidget.requestPayment()"),
+        level = DeprecationLevel.ERROR
+    )
+    fun requestPayment(
+        requestCode: Int,
+        orderId: String,
+        orderName: String,
+        customerEmail: String? = null,
+        customerName: String? = null
+    ) {
     }
 }
