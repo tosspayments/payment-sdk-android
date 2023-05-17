@@ -85,8 +85,8 @@ class PaymentWidget(
         get() = object : PaymentWidgetJavascriptInterface(methodWidget, messageEventHandler) {
             @JavascriptInterface
             fun requestPayments(html: String) {
-                methodWidget?.context?.let {
-                    handlePaymentDom(it, html)
+                methodWidget?.let {
+                    handlePaymentDom(it.context, it.orderId, html)
                 }
             }
 
@@ -102,13 +102,12 @@ class PaymentWidget(
 
     private var methodWidget: PaymentMethod? = null
     private var agreementWidget: Agreement? = null
-    private var orderId: String = ""
 
     private var paymentMethodEventListener: PaymentMethodEventListener? = null
     private var agreementStatusListener: AgreementStatusListener? = null
     private var paymentCallback: PaymentCallback? = null
 
-    private fun handlePaymentDom(context: Context, paymentHtml: String) {
+    private fun handlePaymentDom(context: Context, orderId: String, paymentHtml: String) {
         if (paymentHtml.isNotBlank()) {
             tossPayments.requestPayment(
                 context = context,
@@ -140,27 +139,14 @@ class PaymentWidget(
     @JvmOverloads
     @Throws(IllegalAccessException::class)
     fun requestPayment(
-        orderId: String,
-        orderName: String,
-        customerEmail: String? = null,
-        customerName: String? = null,
+        paymentInfo: PaymentMethod.PaymentInfo,
         paymentCallback: PaymentCallback
     ) {
         try {
             this.paymentCallback = paymentCallback
-            this.orderId = orderId
-
-            methodWidget?.requestPayment(
-                orderId,
-                orderName,
-                customerEmail,
-                customerName,
-                redirectUrl
-            )
+            methodWidget?.requestPayment(paymentInfo, redirectUrl)
         } catch (e: Exception) {
             this.paymentCallback = null
-            this.orderId = ""
-
             throw e
         }
     }

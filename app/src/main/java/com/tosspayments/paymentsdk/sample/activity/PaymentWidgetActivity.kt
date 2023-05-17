@@ -129,8 +129,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         paymentCta.setOnClickListener {
             paymentWidget.requestPayment(
-                orderId = orderId,
-                orderName = orderName,
+                paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
                 paymentCallback = object : PaymentCallback {
                     override fun onPaymentSuccess(success: TossPaymentResult.Success) {
                         handlePaymentSuccessResult(success)

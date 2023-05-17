@@ -11,7 +11,8 @@ class Agreement(context: Context, attrs: AttributeSet? = null) :
     companion object {
         internal const val EVENT_NAME_UPDATE_AGREEMENT_STATUS = "updateAgreementStatus"
 
-        internal const val MESSAGE_NOT_RENDERED = "PaymentMethod is not rendered. Call 'renderPaymentMethods' method first."
+        internal const val MESSAGE_NOT_RENDERED =
+            "PaymentMethod is not rendered. Call 'renderPaymentMethods' method first."
     }
 
     internal fun renderAgreement(

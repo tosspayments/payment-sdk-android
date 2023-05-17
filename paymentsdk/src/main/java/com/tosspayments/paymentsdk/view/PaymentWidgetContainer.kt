@@ -81,7 +81,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         appendWidgetRenderScript: StringBuilder.() -> StringBuilder
     ) {
         val paymentWidgetConstructor =
-            "PaymentWidget('$clientKey', '$customerKey', ${redirectOption(redirectUrl)})"
+            "PaymentWidget('$clientKey', '$customerKey', {'brandpay':{'redirectUrl':'${redirectUrl.orEmpty()}'}})"
 
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
