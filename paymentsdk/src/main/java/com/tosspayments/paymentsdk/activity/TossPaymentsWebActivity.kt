@@ -10,6 +10,7 @@ import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
+import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
@@ -35,11 +36,22 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
             addJavascriptInterface(object : PaymentJavascriptInterface {
                 @JavascriptInterface
                 fun success(response: String) {
-                    setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
-                    finish()
+                    handleSuccessResponse(response)
+                }
+            }, PaymentWidgetContainer.INTERFACE_NAME_WIDGET)
+
+            addJavascriptInterface(object : PaymentJavascriptInterface {
+                @JavascriptInterface
+                fun success(response: String) {
+                    handleSuccessResponse(response)
                 }
             }, PaymentWebView.INTERFACE_NAME_PAYMENT)
         }
+    }
+
+    private fun handleSuccessResponse(response: String) {
+        setResult(RESULT_OK, Intent().putExtra(Constants.EXTRA_KEY_DATA, response))
+        finish()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -48,10 +60,9 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        webView.loadHtml(
-            intent?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty(),
-            intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
-        )
+        val html = intent?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty()
+        val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN).orEmpty()
+        webView.loadHtml(html, domain)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

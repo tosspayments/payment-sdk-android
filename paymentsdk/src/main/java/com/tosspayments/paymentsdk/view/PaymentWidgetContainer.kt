@@ -17,20 +17,14 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
     FrameLayout(context, attrs) {
     private val paymentWebView: PaymentWebView
 
-    protected val redirectOption: (redirectUrl: String?) -> String? = {
-        it?.let { redirectUrl -> "{'brandpay':{'redirectUrl':'$redirectUrl'}}" }
-    }
-
     protected var methodRenderCalled = false
 
     companion object {
-        private const val INTERFACE_NAME_WIDGET = "PaymentWidgetAndroidSDK"
+        internal const val INTERFACE_NAME_WIDGET = "PaymentWidgetAndroidSDK"
 
         internal const val EVENT_NAME = "name"
         internal const val EVENT_PARAMS = "params"
-
         internal const val EVENT_NAME_UPDATE_HEIGHT = "updateHeight"
-
         internal const val EVENT_PARAM_PAYMENT_METHOD_KEY = "paymentMethodKey"
         internal const val EVENT_PARAM_HEIGHT = "height"
     }

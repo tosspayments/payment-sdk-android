@@ -90,12 +90,14 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
                 "base64"
             )
         } else {
+            val baseUrl = "https://$domain"
+            
             loadDataWithBaseURL(
-                domain,
+                baseUrl,
                 html,
                 "text/html; charset=utf-8",
                 "utf-8",
-                domain
+                baseUrl
             )
         }
     }
