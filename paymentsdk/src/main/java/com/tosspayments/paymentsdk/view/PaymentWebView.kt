@@ -91,7 +91,7 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
             )
         } else {
             val baseUrl = "https://$domain"
-            
+
             loadDataWithBaseURL(
                 baseUrl,
                 html,

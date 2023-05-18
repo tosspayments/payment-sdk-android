@@ -119,6 +119,12 @@ class PaymentWidget(
         }
     }
 
+    /**
+     * 결제 수단 위젯 렌더링
+     * @param method : 결제 수단 위젯
+     * @param amount : 결제 금액
+     * @since 2023/05/19
+     */
     fun renderPaymentMethods(
         method: PaymentMethod,
         amount: Number
@@ -136,7 +142,12 @@ class PaymentWidget(
         )
     }
 
-    @JvmOverloads
+    /**
+     * 결제 요청
+     * @param paymentInfo : 결제 정보
+     * @param paymentCallback : 결제 결과 수신 Callback
+     * @since 2023/05/19
+     */
     @Throws(IllegalAccessException::class)
     fun requestPayment(
         paymentInfo: PaymentMethod.PaymentInfo,
@@ -151,12 +162,23 @@ class PaymentWidget(
         }
     }
 
+    /**
+     * 결제 금액 갱신
+     * @param amount : 신규 결제 금액
+     * @param description : 결제 금액이 변경된 사유. 결제 전환율 개선을 위한 리포트 및 A/B 테스트 분석에 사용. 쿠폰와 같은 형식.
+     * @since 2023/05/19
+     */
     @JvmOverloads
     @Throws(IllegalAccessException::class)
-    fun updateAmount(amount: Number, description: String = "") {
-        methodWidget?.updateAmount(amount, description)
+    fun updateAmount(amount: Number, description: String? = null) {
+        methodWidget?.updateAmount(amount, description.orEmpty())
     }
 
+    /**
+     * 커스텀 결제수단 또는 간편결제 직연동 이벤트 리스너 추가
+     * @param listener : customRequest, customPaymentMethodSelect, customPaymentMethodUnselect 이벤트 수신 리스너
+     * @since 2023/05/19
+     */
     @Throws(IllegalAccessException::class)
     fun addPaymentMethodEventListener(listener: PaymentMethodEventListener) {
         methodWidget?.run {
@@ -167,6 +189,11 @@ class PaymentWidget(
         }
     }
 
+    /**
+     * 이용약관 위젯 렌더링
+     * @param agreement : 이용약관 위젯
+     * @since 2023/05/19
+     */
     fun renderAgreement(agreement: Agreement) {
         this.agreementWidget = agreement
 
@@ -175,6 +202,11 @@ class PaymentWidget(
         }.renderAgreement(clientKey, customerKey)
     }
 
+    /**
+     * 이용약관 상태 변경 수신 리스너 추가
+     * @param listener : 이용약관 상태 변경 수신 리스너
+     * @since 2023/05/19
+     */
     @Throws(IllegalAccessException::class)
     fun addAgreementStatusListener(listener: AgreementStatusListener) {
         agreementWidget?.run {
