@@ -1,47 +1,52 @@
 # 0.1.3 (2023.05.19)
 
 ## Added
-
-### com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(method: PaymentMethod,amount: Number)
+### 결제 수단 초기화 메서드
+com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(method: PaymentMethod,amount: Number)
 
 | Parameter | Description |
 |-----------|-------------|
 | method    | 결제 수단 위젯    |
 | amount    | 결제 결제금액     |
 
-### com. osspayments.paymentsdk.PaymentWidget.requestPayment(paymentInfo: PaymentMethod.PaymentInfo, paymentCallback: PaymentCallback)
+### 결제 요청
+com. tosspayments.paymentsdk.PaymentWidget.requestPayment(paymentInfo: PaymentMethod.PaymentInfo, paymentCallback: PaymentCallback)
 
 | Parameter   | Description       |
 |-------------|-------------------|
 | paymentInfo | 결제 정보             |
 | paymentInfo | 결제 결과 수신 Callback |
 
-### com. osspayments.paymentsdk.PaymentWidget.updateAmount(amount: Number, description: String?)
+### 결제 금액 갱신
+com. tosspayments.paymentsdk.PaymentWidget.updateAmount(amount: Number, description: String?)
 
 | Parameter   | Description                                                  |
 |-------------|--------------------------------------------------------------|
 | amount      | 결제 금액                                                        |
 | description | 결제 금액이 변경된 사유. 결제 전환율 개선을 위한 리포트 및 A/B 테스트 분석에 사용. 쿠폰와 같은 형식 |
 
-### com.tosspayments.paymentsdk.PaymentWidget.addPaymentMethodEventListener(listener: PaymentMethodEventListener)
+### 커스텀 결제수단 또는 간편결제 직연동 이벤트 리스너
+com.tosspayments.paymentsdk.PaymentWidget.addPaymentMethodEventListener(listener: PaymentMethodEventListener)
 
 | Parameter | Description                                                                      |
 |-----------|----------------------------------------------------------------------------------|
 | listener  | customRequest, customPaymentMethodSelect, customPaymentMethodUnselect 이벤트 수신 리스너 |
 
-### com.tosspayments.paymentsdk.PaymentWidget.renderAgreement(agreement: Agreement)
+### 이용약관 위젯 렌더링
+com.tosspayments.paymentsdk.PaymentWidget.renderAgreement(agreement: Agreement)
 
 | Parameter | Description |
 |-----------|-------------|
 | agreement | 이용약관 위젯     |
 
-### com.tosspayments.paymentsdk.PaymentWidget.addAgreementStatusListener(listener: AgreementStatusListener)
+### 이용약관 상태 변경 수신 리스너
+com.tosspayments.paymentsdk.PaymentWidget.addAgreementStatusListener(listener: AgreementStatusListener)
 
 | Parameter | Description       |
 |-----------|-------------------|
 | listener  | 이용약관 상태 변경 수신 리스너 |
 
-### Agreement 위젯
+
 
 ## Changed
 
