@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import com.tosspayments.paymentsdk.model.paymentinfo.EscrowProduct
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
+import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMobileCarrier
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -67,6 +68,9 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         var taxExemptionAmount: Number = 0
         var useEscrow: Boolean? = null
         var escrowProducts: List<EscrowProduct>? = null
+        var customerMobilePhone: String? = null
+        var showCustomerMobilePhone: Boolean = false
+        var mobileCarrier: List<TossPaymentMobileCarrier>? = null
 
         override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
             get() = {
@@ -79,6 +83,16 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
                 remove("amount")
                 put("taxExemptionAmount", taxExemptionAmount)
                 put("useEscrow", useEscrow ?: false)
+                put("customerMobilePhone", customerMobilePhone.orEmpty())
+                put("showCustomerMobilePhone", showCustomerMobilePhone)
+
+                mobileCarrier?.let {
+                    put("mobileCarrier", JSONArray().apply {
+                        it.forEach { code ->
+                            this.put(code)
+                        }
+                    })
+                }
 
                 this
             }
