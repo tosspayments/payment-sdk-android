@@ -79,6 +79,6 @@ git clone https://github.com/tosspayments/payment-sdk-android
 
 2. Android Studio에서 프로젝트를 여세요.
 
-3. [샘플 앱](https://github.com/tosspayments/payment-sdk-android/tree/main/app)을 빌드하세요. 앱을 실행하면 아래와 같이 다양한 결제수단 및 결제위젯을 테스트할 수 있습니다.
+3. 'Android Studio > Build > Select Build Variant' 메뉴에서 app / paymentsdk 모두 **liveDebug** 설정 후 [샘플 앱](https://github.com/tosspayments/payment-sdk-android/tree/main/app)을 빌드하세요. 
 
 ![토스페이먼츠 Android SDK 샘플 프로젝터 화면](https://static.tosspayments.com/docs/github/android-sample.png)
