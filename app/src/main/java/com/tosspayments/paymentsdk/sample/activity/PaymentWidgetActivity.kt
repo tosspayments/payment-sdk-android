@@ -4,17 +4,59 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.model.PaymentWidgetOptions
-import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
-import com.tosspayments.paymentsdk.view.PaymentMethodWidget
+import com.tosspayments.paymentsdk.sample.extension.toast
+import com.tosspayments.paymentsdk.view.Agreement
+import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
+    private lateinit var methodWidget: PaymentMethod
+    private lateinit var agreementWidget: Agreement
+    private lateinit var paymentCta: Button
+
+    private val paymentEventListener
+        get() = object : PaymentMethodEventListener() {
+            override fun onCustomRequested(paymentMethodKey: String) {
+                val message = "onCustomRequested : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+
+            override fun onCustomPaymentMethodSelected(paymentMethodKey: String) {
+                val message = "onCustomPaymentMethodSelected : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+
+            override fun onCustomPaymentMethodUnselected(paymentMethodKey: String) {
+                val message = "onCustomPaymentMethodUnselected : $paymentMethodKey"
+                Log.d(TAG, message)
+
+                toast(message)
+            }
+        }
+
+    private val agreementStatusListener
+        get() = object : AgreementStatusListener {
+            override fun onAgreementStatusChanged(agreementStatus: AgreementStatus) {
+                Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
+
+                runOnUiThread {
+                    paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                }
+            }
+        }
+
     companion object {
+        private const val TAG = "PaymentWidgetActivity"
+
         private const val EXTRA_KEY_AMOUNT = "extraKeyAmount"
         private const val EXTRA_KEY_CLIENT_KEY = "extraKeyClientKey"
         private const val EXTRA_KEY_CUSTOMER_KEY = "extraKeyCustomerKey"
@@ -41,22 +83,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
     }
 
-    private val tossPaymentActivityResult: ActivityResultLauncher<Intent> =
-        PaymentWidget.getPaymentResultLauncher(
-            this,
-            { success ->
-                handlePaymentSuccessResult(success)
-            },
-            { fail ->
-                handlePaymentFailResult(fail)
-            })
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_payment_widget)
 
+        initViews()
+
         intent?.run {
-            initViews(
+            initPaymentWidget(
                 getLongExtra(EXTRA_KEY_AMOUNT, 0),
                 getStringExtra(EXTRA_KEY_CLIENT_KEY).orEmpty(),
                 getStringExtra(EXTRA_KEY_CUSTOMER_KEY).orEmpty(),
@@ -68,7 +102,13 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initViews(
+    private fun initViews() {
+        methodWidget = findViewById(R.id.payment_widget)
+        agreementWidget = findViewById(R.id.agreement_widget)
+        paymentCta = findViewById(R.id.request_payment_cta)
+    }
+
+    private fun initPaymentWidget(
         amount: Long,
         clientKey: String,
         customerKey: String,
@@ -80,38 +120,45 @@ class PaymentWidgetActivity : AppCompatActivity() {
             activity = this@PaymentWidgetActivity,
             clientKey = clientKey,
             customerKey = customerKey,
-            options = redirectUrl?.let {
+            redirectUrl?.let {
                 PaymentWidgetOptions.Builder()
                     .brandPayOption(redirectUrl = it)
                     .build()
             }
         )
 
-        val methodWidget = findViewById<PaymentMethodWidget>(R.id.payment_widget)
-        paymentWidget.setMethodWidget(methodWidget)
-
-        paymentWidget.renderPaymentMethodWidget(
-            amount = amount,
-            orderId = orderId
-        )
-
-        findViewById<Button>(R.id.request_payment_cta).setOnClickListener {
+        paymentCta.setOnClickListener {
             paymentWidget.requestPayment(
-                paymentResultLauncher = tossPaymentActivityResult,
-                orderId = orderId,
-                orderName = orderName
+                paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
+                paymentCallback = object : PaymentCallback {
+                    override fun onPaymentSuccess(success: TossPaymentResult.Success) {
+                        handlePaymentSuccessResult(success)
+                    }
+
+                    override fun onPaymentFailed(fail: TossPaymentResult.Fail) {
+                        handlePaymentFailResult(fail)
+                    }
+                }
             )
+        }
+
+        paymentWidget.run {
+            renderPaymentMethods(methodWidget, amount)
+            renderAgreement(agreementWidget)
+
+            addPaymentMethodEventListener(paymentEventListener)
+            addAgreementStatusListener(agreementStatusListener)
         }
     }
 
     private fun handlePaymentSuccessResult(success: TossPaymentResult.Success) {
         val paymentType: String? = success.additionalParameters["paymentType"]
         if ("BRANDPAY".equals(paymentType, true)) {
-            // 브랜드페이 승인
+            // TODO: 브랜드페이 승인
         } else {
-            // 일반결제 승인 -> 추후 일반결제/브랜드페이 승인으로 Migration 예정되어있음
+            // TODO: 일반결제 승인 -> 추후 일반결제/브랜드페이 승인으로 Migration 예정되어있음
         }
-        
+
         startActivity(
             PaymentResultActivity.getIntent(
                 this@PaymentWidgetActivity,
