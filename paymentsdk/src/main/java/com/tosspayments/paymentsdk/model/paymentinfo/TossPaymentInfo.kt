@@ -10,7 +10,7 @@ open class TossPaymentInfo(
 ) {
     var customerName: String? = null
     var customerEmail: String? = null
-    var taxFreeAmount: Long? = null
+    var taxFreeAmount: Number? = null
     var cultureExpense: Boolean = false
 
     open val paymentPayload: (JSONObject.(JSONObject) -> (JSONObject)) = {

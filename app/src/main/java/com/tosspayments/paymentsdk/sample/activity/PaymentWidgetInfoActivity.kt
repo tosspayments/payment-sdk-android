@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
-import com.tosspayments.paymentsdk.sample.BuildConfig
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetInfoViewModel
 import kotlinx.coroutines.launch
@@ -20,11 +19,13 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
     private lateinit var nextCta: Button
 
-    private val customerKey = BuildConfig.CUSTOMER_KEY
-    private val clientKey = BuildConfig.CLIENT_KEY
-    private val redirectUrl = BuildConfig.REDIRECT_URL
-    private val orderId = BuildConfig.ORDER_ID
-    private val orderName = "Kotlin IN ACTION 외 1권"
+    companion object {
+        private const val DEFAULT_CUSTOMER_KEY = "CUSTOMER_KEY"
+        private const val DEFAULT_CLIENT_KEY = "CLIENT_KEY"
+        private const val DEFAULT_ORDER_ID = "ORDER_ID"
+        private const val DEFAULT_ORDER_NAME = "Kotlin IN ACTION 외 2권"
+        private const val DEFAULT_REDIRECT_URL = ""
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +42,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                 viewModel.setClientKey(it.toString())
             }
 
-            setText(clientKey)
+            setText(DEFAULT_CLIENT_KEY)
         }
 
         findViewById<AppCompatEditText>(R.id.payment_cutomer_key).apply {
@@ -49,7 +50,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                 viewModel.setCustomerKey(it.toString())
             }
 
-            setText(customerKey)
+            setText(DEFAULT_CUSTOMER_KEY)
         }
 
         findViewById<EditText>(R.id.payment_amount).apply {
@@ -71,7 +72,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                 viewModel.setOrderId(it.toString())
             }
 
-            setText(orderId)
+            setText(DEFAULT_ORDER_ID)
         }
 
         findViewById<EditText>(R.id.payment_order_name).run {
@@ -79,7 +80,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                 viewModel.setOrderName(it.toString())
             }
 
-            setText(orderName)
+            setText(DEFAULT_ORDER_NAME)
         }
 
         findViewById<EditText>(R.id.payment_redirect_url).run {
@@ -87,7 +88,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                 viewModel.setRedirectUrl(it.toString())
             }
 
-            setText(redirectUrl)
+            setText(DEFAULT_REDIRECT_URL)
         }
 
         nextCta = findViewById(R.id.payment_next_cta)
