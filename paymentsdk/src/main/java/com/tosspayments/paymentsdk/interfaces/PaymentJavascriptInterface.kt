@@ -1,0 +1,3 @@
+package com.tosspayments.paymentsdk.interfaces
+
+interface PaymentJavascriptInterface

@@ -67,6 +67,7 @@
 
         <activity
             android:name=".activity.PaymentResultActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
