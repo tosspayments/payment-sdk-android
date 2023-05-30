@@ -1,4 +1,4 @@
-# 0.1.4 (2023.05.19)
+# 0.1.4 (2023.05.30)
 
 ## Added
 ### 결제 수단 초기화 메서드
@@ -12,9 +12,9 @@ com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(method: PaymentMe
 ### 결제 요청
 com. tosspayments.paymentsdk.PaymentWidget.requestPayment(paymentInfo: PaymentMethod.PaymentInfo, paymentCallback: PaymentCallback)
 
-| Parameter   | Description       |
-|-------------|-------------------|
-| paymentInfo | 결제 정보             |
+| Parameter       | Description       |
+|-----------------|-------------------|
+| paymentInfo     | 결제 정보             |
 | paymentCallback | 결제 결과 수신 Callback |
 
 ### 결제 금액 갱신
