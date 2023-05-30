@@ -15,7 +15,7 @@ com. tosspayments.paymentsdk.PaymentWidget.requestPayment(paymentInfo: PaymentMe
 | Parameter   | Description       |
 |-------------|-------------------|
 | paymentInfo | 결제 정보             |
-| paymentInfo | 결제 결과 수신 Callback |
+| paymentCallback | 결제 결과 수신 Callback |
 
 ### 결제 금액 갱신
 com. tosspayments.paymentsdk.PaymentWidget.updateAmount(amount: Number, description: String?)
