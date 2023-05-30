@@ -9,7 +9,7 @@
                     <corners android:radius="12dp" />
                 </shape>
             </item>
-            <item>
+            <item android:state_enabled="true">
                 <shape>
                     <solid android:color="@color/main_blue" />
                     <corners android:radius="12dp" />

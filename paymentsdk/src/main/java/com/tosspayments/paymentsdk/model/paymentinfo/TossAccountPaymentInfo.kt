@@ -1,5 +1,6 @@
 package com.tosspayments.paymentsdk.model.paymentinfo
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 data class TossAccountPaymentInfo(
@@ -18,13 +19,18 @@ data class TossAccountPaymentInfo(
 
     override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
         get() = {
+            val escrowProductsPayload = JSONArray()
+            escrowProducts?.map { it.json }?.forEach {
+                escrowProductsPayload.put(it)
+            }
+            put("escrowProducts", escrowProductsPayload)
+            put("useEscrow", useEscrow ?: false)
+
             validHours?.let { put("validHours", it) }
             dueDate?.let { put("dueDate", it) }
             customerMobilePhone?.let { put("customerMobilePhone", it) }
             showCustomerMobilePhone?.let { put("showCustomerMobilePhone", it) }
             cashReceipt?.let { put("cashReceipt", it) }
-            useEscrow?.let { put("useEscrow", it) }
-            escrowProducts?.let { put("escrowProducts", it) }
 
             put("currency", currency)
         }
