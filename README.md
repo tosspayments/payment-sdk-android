@@ -43,24 +43,28 @@ dependencies {
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/white">
 
     ...
 
-    <com.tosspayments.paymentsdk.view.PaymentMethodWidget
-        android:id="@+id/payment_widget"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" />
+    <com.tosspayments.paymentsdk.view.PaymentMethod
+      android:id="@+id/payment_widget"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp" />
 
-        ...
+    <com.tosspayments.paymentsdk.view.Agreement
+      android:id="@+id/agreement_widget"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+      
+    ...
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
 ```
 
 ## 시작하기
