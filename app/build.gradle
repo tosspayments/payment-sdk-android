@@ -19,7 +19,7 @@ android {
         minSdk 21
         targetSdk 33
         versionCode 1
-        versionName "0.1.5"
+        versionName "0.1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -64,7 +64,7 @@ dependencies {
     def lifecycle_version = "2.5.1"
     def compose_version = "1.2.1"
 
-//    implementation 'com.github.tosspayments:payment-sdk-android:0.1.5'
+//    implementation 'com.github.tosspayments:payment-sdk-android:0.1.6'
 
 //    로컬 테스트시 해제
     implementation project(':paymentsdk')
