@@ -5,7 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
@@ -18,6 +21,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     private lateinit var methodWidget: PaymentMethod
     private lateinit var agreementWidget: Agreement
     private lateinit var paymentCta: Button
+    private lateinit var updateAmountCta: Button
 
     private val paymentEventListener
         get() = object : PaymentMethodEventListener() {
@@ -106,6 +110,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         methodWidget = findViewById(R.id.payment_widget)
         agreementWidget = findViewById(R.id.agreement_widget)
         paymentCta = findViewById(R.id.request_payment_cta)
+        updateAmountCta = findViewById(R.id.change_amount_cta)
     }
 
     private fun initPaymentWidget(
@@ -127,6 +132,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
             }
         )
 
+        paymentWidget.run {
+            renderPaymentMethods(methodWidget, amount)
+            renderAgreement(agreementWidget)
+
+            addPaymentMethodEventListener(paymentEventListener)
+            addAgreementStatusListener(agreementStatusListener)
+        }
+
         paymentCta.setOnClickListener {
             paymentWidget.requestPayment(
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
@@ -142,12 +155,10 @@ class PaymentWidgetActivity : AppCompatActivity() {
             )
         }
 
-        paymentWidget.run {
-            renderPaymentMethods(methodWidget, amount)
-            renderAgreement(agreementWidget)
-
-            addPaymentMethodEventListener(paymentEventListener)
-            addAgreementStatusListener(agreementStatusListener)
+        updateAmountCta.setOnClickListener {
+            showUpdateAmountDialog { inputAmount ->
+                paymentWidget.updateAmount(inputAmount)
+            }
         }
     }
 
@@ -185,5 +196,24 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 )
             )
         )
+    }
+
+    private fun showUpdateAmountDialog(amountCallback: (Long) -> Unit) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_input_amount, null)
+        val inputAmount = view.findViewById<EditText>(R.id.input_amount)
+
+        AlertDialog.Builder(this)
+            .setView(view)
+            .setPositiveButton("확인") { dialog, _ ->
+                try {
+                    amountCallback.invoke(inputAmount.text.toString().toLong())
+                } catch (ignore: Exception) {
+                }
+
+                dialog.dismiss()
+            }
+            .setNegativeButton("취소") { dialog, _ ->
+                dialog.dismiss()
+            }.show()
     }
 }
