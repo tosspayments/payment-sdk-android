@@ -30,7 +30,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         redirectUrl: String? = null
     ) {
         renderWidget(clientKey, customerKey, domain, redirectUrl) {
-            appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
+            appendLine("const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amount);")
         }
     }
 
@@ -55,7 +55,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     @Throws(IllegalAccessException::class)
     internal fun updateAmount(amount: Number, description: String = "") {
         if (methodRenderCalled) {
-            evaluateJavascript("paymentWidget.updateAmount(${amount}, '${description}');")
+            evaluateJavascript("paymentMethods.updateAmount(${amount}, '${description}');")
         } else {
             throw IllegalArgumentException(MESSAGE_NOT_RENDERED)
         }
