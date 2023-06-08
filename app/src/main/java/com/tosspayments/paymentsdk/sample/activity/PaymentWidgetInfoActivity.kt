@@ -20,9 +20,9 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
     private lateinit var nextCta: Button
 
     companion object {
-        private const val DEFAULT_CUSTOMER_KEY = "CUSTOMER_KEY"
-        private const val DEFAULT_CLIENT_KEY = "CLIENT_KEY"
-        private const val DEFAULT_ORDER_ID = "ORDER_ID"
+        private const val DEFAULT_CUSTOMER_KEY = "test_sk_O6BYq7GWPVvMGnqb4143NE5vbo1d"
+        private const val DEFAULT_CLIENT_KEY = "test_ck_0Poxy1XQL8R4P1zpv14V7nO5Wmlg"
+        private const val DEFAULT_ORDER_ID = "kangdroid"
         private const val DEFAULT_ORDER_NAME = "Kotlin IN ACTION 외 2권"
         private const val DEFAULT_REDIRECT_URL = ""
     }
