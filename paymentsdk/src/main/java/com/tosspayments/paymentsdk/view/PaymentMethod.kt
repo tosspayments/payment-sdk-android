@@ -30,7 +30,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         redirectUrl: String? = null
     ) {
         renderWidget(clientKey, customerKey, domain, redirectUrl) {
-            appendLine("paymentWidget.renderPaymentMethods('#payment-method', $amount);")
+            appendLine("const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amount);")
         }
     }
 
