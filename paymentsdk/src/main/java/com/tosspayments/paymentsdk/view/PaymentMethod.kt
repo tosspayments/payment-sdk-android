@@ -55,7 +55,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     @Throws(IllegalAccessException::class)
     internal fun updateAmount(amount: Number, description: String = "") {
         if (methodRenderCalled) {
-            evaluateJavascript("paymentMethods.updateAmount(${amount}, '${description}');")
+            evaluateJavascript("paymentWidget.updateAmount(${amount}, '${description}');")
         } else {
             throw IllegalArgumentException(MESSAGE_NOT_RENDERED)
         }
