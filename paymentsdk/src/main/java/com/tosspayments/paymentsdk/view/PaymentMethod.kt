@@ -74,17 +74,26 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
         override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
             get() = {
-                val escrowProductsPayload = JSONArray()
-                escrowProducts?.map { it.json }?.forEach {
-                    escrowProductsPayload.put(it)
-                }
-                put("escrowProducts", escrowProductsPayload)
-
                 remove("amount")
+
                 put("taxExemptionAmount", taxExemptionAmount)
-                put("useEscrow", useEscrow ?: false)
-                put("customerMobilePhone", customerMobilePhone.orEmpty())
                 put("showCustomerMobilePhone", showCustomerMobilePhone)
+
+                useEscrow?.let {
+                    put("useEscrow", useEscrow ?: it)
+                }
+
+                escrowProducts?.let {
+                    val escrowProductsPayload = JSONArray()
+                    it.map { escrowProduct -> escrowProduct.json }.forEach { json ->
+                        escrowProductsPayload.put(json)
+                    }
+                    put("escrowProducts", escrowProductsPayload)
+                }
+
+                customerMobilePhone?.let {
+                    put("customerMobilePhone", it)
+                }
 
                 mobileCarrier?.let {
                     put("mobileCarrier", JSONArray().apply {
