@@ -12,11 +12,11 @@ data class EscrowProduct(
     val unitPrice: Long,
     val quantity: Int
 ) : Parcelable {
-    val json : JSONObject
-    get() = JSONObject()
-        .put("id", id)
-        .put("name", name)
-        .put("code", code)
-        .put("unitPrice", unitPrice)
-        .put("quantity", quantity)
+    val json: JSONObject
+        get() = JSONObject()
+            .put("id", id)
+            .put("name", name)
+            .put("code", code)
+            .put("unitPrice", unitPrice)
+            .put("quantity", quantity)
 }
