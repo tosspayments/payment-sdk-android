@@ -1,23 +1,24 @@
 package com.tosspayments.paymentsdk.sample.activity
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetInfoBinding
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetInfoViewModel
+import com.tosspayments.paymentsdk.view.PaymentMethod
 import kotlinx.coroutines.launch
 
 class PaymentWidgetInfoActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetInfoViewModel by viewModels()
 
-    private lateinit var nextCta: Button
+    private lateinit var binding: ActivityPaymentWidgetInfoBinding
 
     companion object {
         private const val DEFAULT_CUSTOMER_KEY = "CUSTOMER_KEY"
@@ -25,11 +26,13 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
         private const val DEFAULT_ORDER_ID = "ORDER_ID"
         private const val DEFAULT_ORDER_NAME = "ORDER_NAME"
         private const val DEFAULT_REDIRECT_URL = ""
+        private const val DEFAULT_COUNTRY_CODE = "KR"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_payment_widget_info)
+        binding = ActivityPaymentWidgetInfoBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         initViews()
         bindViewModel()
@@ -37,7 +40,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
-        findViewById<AppCompatEditText>(R.id.payment_client_key).apply {
+        binding.paymentClientKey.run {
             addTextChangedListener {
                 viewModel.setClientKey(it.toString())
             }
@@ -45,7 +48,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_CLIENT_KEY)
         }
 
-        findViewById<AppCompatEditText>(R.id.payment_cutomer_key).apply {
+        binding.paymentCutomerKey.run {
             addTextChangedListener {
                 viewModel.setCustomerKey(it.toString())
             }
@@ -53,7 +56,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_CUSTOMER_KEY)
         }
 
-        findViewById<EditText>(R.id.payment_amount).apply {
+        binding.paymentAmount.run {
             addTextChangedListener {
                 val amount = try {
                     it.toString().toLong()
@@ -67,7 +70,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText("50000")
         }
 
-        findViewById<EditText>(R.id.payment_order_Id).apply {
+        binding.paymentOrderId.run {
             addTextChangedListener {
                 viewModel.setOrderId(it.toString())
             }
@@ -75,7 +78,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_ORDER_ID)
         }
 
-        findViewById<EditText>(R.id.payment_order_name).run {
+        binding.paymentOrderName.run {
             addTextChangedListener {
                 viewModel.setOrderName(it.toString())
             }
@@ -83,21 +86,40 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_ORDER_NAME)
         }
 
-        findViewById<EditText>(R.id.payment_redirect_url).run {
+        binding.paymentCurrency.setOnClickListener {
+            CurrencyDialogFragment {
+                viewModel.setCurrency(it)
+            }.show(supportFragmentManager, "paymentCurrencyDialog")
+        }
+
+        binding.paymentCountryCode.run {
+            addTextChangedListener {
+                viewModel.countryCode = it.toString()
+            }
+
+            setText(DEFAULT_COUNTRY_CODE)
+        }
+
+        binding.paymentVariantKey.run {
+            addTextChangedListener {
+                viewModel.variantKey = it.toString()
+            }
+        }
+
+        binding.paymentRedirectUrl.run {
             addTextChangedListener {
                 viewModel.setRedirectUrl(it.toString())
             }
 
             setText(DEFAULT_REDIRECT_URL)
         }
-
-        nextCta = findViewById(R.id.payment_next_cta)
     }
 
     private fun bindViewModel() {
         lifecycleScope.launch {
             viewModel.paymentEnableState.collect { uiState ->
-                nextCta.isEnabled = uiState != PaymentWidgetInfoViewModel.UiState.Invalid
+                binding.paymentNextCta.isEnabled =
+                    uiState != PaymentWidgetInfoViewModel.UiState.Invalid
 
                 val (isEnabled, clickListener) = when (uiState) {
                     is PaymentWidgetInfoViewModel.UiState.Invalid -> {
@@ -114,6 +136,10 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                                         customerKey = uiState.customerKey,
                                         orderId = uiState.orderId,
                                         orderName = uiState.orderName,
+                                        currency = viewModel.currency.value
+                                            ?: PaymentMethod.Rendering.Currency.KRW,
+                                        countryCode = viewModel.countryCode,
+                                        variantKey = viewModel.variantKey,
                                         redirectUrl = uiState.redirectUrl
                                     )
                                 )
@@ -122,11 +148,38 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                     }
                 }
 
-                nextCta.run {
+                binding.paymentNextCta.run {
                     this.isEnabled = isEnabled
                     setOnClickListener(clickListener)
                 }
             }
+        }
+
+        viewModel.currency.observe(this@PaymentWidgetInfoActivity) {
+            binding.paymentCurrency.text = it.name
+        }
+    }
+
+    class CurrencyDialogFragment(
+        private val onItemClicked: ((PaymentMethod.Rendering.Currency) -> Unit)? = null
+    ) : DialogFragment() {
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val currencies = PaymentMethod.Rendering.Currency.values()
+            val items = currencies.map {
+                it.name
+            }.toTypedArray()
+
+            return activity?.let {
+                val builder = AlertDialog.Builder(it)
+                builder.setTitle("결제 통화")
+                    .setItems(
+                        items
+                    ) { dialog, which ->
+                        onItemClicked?.invoke(currencies[which])
+                        dialog.dismiss()
+                    }
+                builder.create()
+            } ?: throw IllegalStateException("Activity cannot be null")
         }
     }
 }
