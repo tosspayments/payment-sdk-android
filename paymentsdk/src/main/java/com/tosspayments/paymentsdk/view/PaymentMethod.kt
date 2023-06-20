@@ -26,11 +26,49 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         clientKey: String,
         customerKey: String,
         amount: Number,
+        options: Rendering.Options? = null,
         domain: String? = null,
         redirectUrl: String? = null
     ) {
+        val optionsJson = JSONObject().apply {
+            options?.let {
+                put("variantKey", it.variantKey)
+            }
+        }
+
+        val renderMethodScript =
+            "const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amount, $optionsJson);"
+
         renderWidget(clientKey, customerKey, domain, redirectUrl) {
-            appendLine("const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amount);")
+            appendLine(renderMethodScript)
+        }
+    }
+
+    internal fun renderPaymentMethods(
+        clientKey: String,
+        customerKey: String,
+        amount: Rendering.Amount,
+        options: Rendering.Options? = null,
+        domain: String? = null,
+        redirectUrl: String? = null
+    ) {
+        val amountJson = JSONObject().apply {
+            put("value", amount.value)
+            put("currency", amount.currency.name)
+            put("country", amount.country)
+        }
+
+        val optionsJson = JSONObject().apply {
+            options?.let {
+                put("variantKey", it.variantKey)
+            }
+        }
+
+        val renderMethodScript =
+            "const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amountJson, $optionsJson);"
+
+        renderWidget(clientKey, customerKey, domain, redirectUrl) {
+            appendLine(renderMethodScript)
         }
     }
 
@@ -59,6 +97,34 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         } else {
             throw IllegalArgumentException(MESSAGE_NOT_RENDERED)
         }
+    }
+
+    object Rendering {
+        enum class Currency {
+            KRW, AUD, EUR, GBP, HKD, JPY, SGD, USD
+        }
+
+        /**
+         * PayPal 해외간편결제 금액 정보
+         * @property value : 결제 금액
+         * @property currency: 결제 통화
+         * @property country : 결제 국가 코드 (https://ko.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+         * @since 2023/06/20
+         */
+        data class Amount(
+            val value: Number,
+            val currency: Currency = Currency.KRW,
+            val country: String = "KR"
+        )
+
+        /**
+         * 결제위젯의 렌더링 옵션
+         * @property variantKey : 멀티 결제 UI를 사용할 때 설정. 렌더링하고 싶은 결제위젯의 키 값
+         * @since 2023/06/20
+         */
+        data class Options(
+            val variantKey: String
+        )
     }
 
     data class PaymentInfo(
