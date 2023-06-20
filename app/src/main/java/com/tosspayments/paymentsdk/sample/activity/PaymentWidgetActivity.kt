@@ -1,27 +1,22 @@
 package com.tosspayments.paymentsdk.sample.activity
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetBinding
 import com.tosspayments.paymentsdk.sample.extension.toast
-import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
-    private lateinit var methodWidget: PaymentMethod
-    private lateinit var agreementWidget: Agreement
-    private lateinit var paymentCta: Button
-    private lateinit var updateAmountCta: Button
+    private lateinit var binding: ActivityPaymentWidgetBinding
 
     private val paymentEventListener
         get() = object : PaymentMethodEventListener() {
@@ -53,7 +48,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
 
                 runOnUiThread {
-                    paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                    binding.requestPaymentCta.isEnabled = agreementStatus.agreedRequiredTerms
                 }
             }
         }
@@ -66,6 +61,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
         private const val EXTRA_KEY_CUSTOMER_KEY = "extraKeyCustomerKey"
         private const val EXTRA_KEY_ORDER_ID = "extraKeyOrderId"
         private const val EXTRA_KEY_ORDER_NAME = "extraKeyOrderName"
+        private const val EXTRA_KEY_CURRENCY = "extraKeyCurrency"
+        private const val EXTRA_KEY_COUNTRY_CODE = "extraKeyCountryCode"
+        private const val EXTRA_KEY_VARIANT_KEY = "extraKeyVariantKey"
         private const val EXTRA_KEY_REDIRECT_URL = "extraKeyRedirectUrl"
 
         fun getIntent(
@@ -75,6 +73,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
             customerKey: String,
             orderId: String,
             orderName: String,
+            currency: PaymentMethod.Rendering.Currency,
+            countryCode: String,
+            variantKey: String? = null,
             redirectUrl: String? = null
         ): Intent {
             return Intent(context, PaymentWidgetActivity::class.java)
@@ -83,34 +84,33 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 .putExtra(EXTRA_KEY_CUSTOMER_KEY, customerKey)
                 .putExtra(EXTRA_KEY_ORDER_ID, orderId)
                 .putExtra(EXTRA_KEY_ORDER_NAME, orderName)
+                .putExtra(EXTRA_KEY_CURRENCY, currency)
+                .putExtra(EXTRA_KEY_COUNTRY_CODE, countryCode)
+                .putExtra(EXTRA_KEY_VARIANT_KEY, variantKey)
                 .putExtra(EXTRA_KEY_REDIRECT_URL, redirectUrl)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_payment_widget)
-
-        initViews()
+        binding = ActivityPaymentWidgetBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         intent?.run {
             initPaymentWidget(
-                getLongExtra(EXTRA_KEY_AMOUNT, 0),
-                getStringExtra(EXTRA_KEY_CLIENT_KEY).orEmpty(),
-                getStringExtra(EXTRA_KEY_CUSTOMER_KEY).orEmpty(),
-                getStringExtra(EXTRA_KEY_ORDER_ID).orEmpty(),
-                getStringExtra(EXTRA_KEY_ORDER_NAME).orEmpty(),
-                getStringExtra(EXTRA_KEY_REDIRECT_URL),
+                amount = getLongExtra(EXTRA_KEY_AMOUNT, 0),
+                clientKey = getStringExtra(EXTRA_KEY_CLIENT_KEY).orEmpty(),
+                customerKey = getStringExtra(EXTRA_KEY_CUSTOMER_KEY).orEmpty(),
+                orderId = getStringExtra(EXTRA_KEY_ORDER_ID).orEmpty(),
+                orderName = getStringExtra(EXTRA_KEY_ORDER_NAME).orEmpty(),
+                currency = getSerializableExtra(EXTRA_KEY_CURRENCY) as? PaymentMethod.Rendering.Currency
+                    ?: PaymentMethod.Rendering.Currency.KRW,
+                countryCode = getStringExtra(EXTRA_KEY_COUNTRY_CODE)?.takeIf { it.length == 2 }
+                    ?: "KR",
+                variantKey = getStringExtra(EXTRA_KEY_VARIANT_KEY),
+                redirectUrl = getStringExtra(EXTRA_KEY_REDIRECT_URL)
             )
         }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun initViews() {
-        methodWidget = findViewById(R.id.payment_widget)
-        agreementWidget = findViewById(R.id.agreement_widget)
-        paymentCta = findViewById(R.id.request_payment_cta)
-        updateAmountCta = findViewById(R.id.change_amount_cta)
     }
 
     private fun initPaymentWidget(
@@ -119,6 +119,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
         customerKey: String,
         orderId: String,
         orderName: String,
+        currency: PaymentMethod.Rendering.Currency,
+        countryCode: String,
+        variantKey: String?,
         redirectUrl: String?
     ) {
         val paymentWidget = PaymentWidget(
@@ -132,15 +135,21 @@ class PaymentWidgetActivity : AppCompatActivity() {
             }
         )
 
+        val renderingAmount = PaymentMethod.Rendering.Amount(amount, currency, countryCode)
+
+        val renderingOptions = variantKey?.takeIf { it.isNotBlank() }?.let {
+            PaymentMethod.Rendering.Options(variantKey = it)
+        }
+
         paymentWidget.run {
-            renderPaymentMethods(methodWidget, amount)
-            renderAgreement(agreementWidget)
+            renderPaymentMethods(binding.paymentWidget, renderingAmount, renderingOptions)
+            renderAgreement(binding.agreementWidget)
 
             addPaymentMethodEventListener(paymentEventListener)
             addAgreementStatusListener(agreementStatusListener)
         }
 
-        paymentCta.setOnClickListener {
+        binding.requestPaymentCta.setOnClickListener {
             paymentWidget.requestPayment(
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
                 paymentCallback = object : PaymentCallback {
@@ -155,7 +164,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             )
         }
 
-        updateAmountCta.setOnClickListener {
+        binding.changeAmountCta.setOnClickListener {
             showUpdateAmountDialog { inputAmount ->
                 paymentWidget.updateAmount(inputAmount)
             }
