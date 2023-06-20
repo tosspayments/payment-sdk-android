@@ -13,6 +13,9 @@ import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
@@ -116,17 +119,19 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         )
     }
 
-    fun addWidgetStatusListener(statusListener: PaymentWidgetStatusListener) {
+    internal fun addPaymentWidgetStatusListener(statusListener: PaymentWidgetStatusListener?) {
         this.statusListener = statusListener
     }
 
     internal fun updateWidgetStatus(widget: String, status: String) {
         if (widget == widgetName) {
-            statusListener?.let {
-                when (status) {
-                    "loading" -> it.onLoading()
-                    "loaded" -> it.onLoaded()
-                    "failed" -> it.onFailed()
+            CoroutineScope(Dispatchers.Main).launch {
+                statusListener?.let {
+                    when (status) {
+                        "loading" -> it.onLoading()
+                        "loaded" -> it.onLoaded()
+                        "failed" -> it.onFailed()
+                    }
                 }
             }
         }

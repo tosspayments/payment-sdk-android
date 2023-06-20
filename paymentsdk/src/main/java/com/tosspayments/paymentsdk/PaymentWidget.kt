@@ -124,15 +124,22 @@ class PaymentWidget(
      * @param method : 결제 수단 위젯
      * @param amount : 결제 금액
      * @param options : 결제위젯의 렌더링 옵션
+     * @param paymentWidgetStatusListener : 결제위젯 렌더링 이벤트 리스너
      * @since 2023/05/19
      */
     @JvmOverloads
     fun renderPaymentMethods(
         method: PaymentMethod,
         amount: Number,
-        options: PaymentMethod.Rendering.Options? = null
+        options: PaymentMethod.Rendering.Options? = null,
+        paymentWidgetStatusListener: PaymentWidgetStatusListener? = null
     ) {
-        renderPaymentMethods(method, PaymentMethod.Rendering.Amount(value = amount), options)
+        renderPaymentMethods(
+            method,
+            PaymentMethod.Rendering.Amount(value = amount),
+            options,
+            paymentWidgetStatusListener
+        )
     }
 
     /**
@@ -140,17 +147,21 @@ class PaymentWidget(
      * @param method : 결제 수단 위젯
      * @param amount : 결제 금액 정보
      * @param options : 결제위젯 렌더링 옵션
+     * @param paymentWidgetStatusListener : 결제위젯 렌더링 이벤트 리스너
      * @since 2023/06/20
      */
     @JvmOverloads
     fun renderPaymentMethods(
         method: PaymentMethod,
         amount: PaymentMethod.Rendering.Amount,
-        options: PaymentMethod.Rendering.Options? = null
+        options: PaymentMethod.Rendering.Options? = null,
+        paymentWidgetStatusListener: PaymentWidgetStatusListener? = null
     ) {
         this.methodWidget = method.apply {
-            addJavascriptInterface(methodWidgetJavascriptInterface)
+            addPaymentWidgetStatusListener(paymentWidgetStatusListener)
         }
+
+        methodWidget?.addJavascriptInterface(methodWidgetJavascriptInterface)
 
         method.renderPaymentMethods(
             clientKey,
@@ -212,10 +223,17 @@ class PaymentWidget(
     /**
      * 이용약관 위젯 렌더링
      * @param agreement : 이용약관 위젯
+     * @param paymentWidgetStatusListener : 이용약관 위젯 렌더링 이벤트 리스너
      * @since 2023/05/19
      */
-    fun renderAgreement(agreement: Agreement) {
-        this.agreementWidget = agreement
+    @JvmOverloads
+    fun renderAgreement(
+        agreement: Agreement,
+        paymentWidgetStatusListener: PaymentWidgetStatusListener? = null
+    ) {
+        this.agreementWidget = agreement.apply {
+            addPaymentWidgetStatusListener(paymentWidgetStatusListener)
+        }
 
         agreement.apply {
             addJavascriptInterface(PaymentWidgetJavascriptInterface(agreement, messageEventHandler))
