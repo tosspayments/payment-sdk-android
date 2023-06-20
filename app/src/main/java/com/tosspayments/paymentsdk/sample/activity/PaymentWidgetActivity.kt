@@ -53,6 +53,52 @@ class PaymentWidgetActivity : AppCompatActivity() {
             }
         }
 
+    private val paymentMethodWidgetStatusListener = object : PaymentWidgetStatusListener {
+        override fun onLoading() {
+            val message = "PaymentMethods loading"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+
+        override fun onLoaded() {
+            val message = "PaymentMethods loaded"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+
+        override fun onFailed() {
+            val message = "PaymentMethods failed"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+    }
+
+    private val agreementWidgetStatusListener = object : PaymentWidgetStatusListener {
+        override fun onLoading() {
+            val message = "Agreement loading"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+
+        override fun onLoaded() {
+            val message = "Agreement loaded"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+
+        override fun onFailed() {
+            val message = "Agreement failed"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+    }
+
     companion object {
         private const val TAG = "PaymentWidgetActivity"
 
@@ -142,8 +188,14 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         paymentWidget.run {
-            renderPaymentMethods(binding.paymentWidget, renderingAmount, renderingOptions)
-            renderAgreement(binding.agreementWidget)
+            renderPaymentMethods(
+                binding.paymentMethodWidget,
+                renderingAmount,
+                renderingOptions,
+                paymentMethodWidgetStatusListener
+            )
+
+            renderAgreement(binding.agreementWidget, agreementWidgetStatusListener)
 
             addPaymentMethodEventListener(paymentEventListener)
             addAgreementStatusListener(agreementStatusListener)
