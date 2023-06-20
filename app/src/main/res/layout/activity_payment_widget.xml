@@ -19,11 +19,29 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/payment_method_widget_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:padding="4dp"
+                android:textColor="@color/gray"
+                android:textSize="12sp" />
+
             <com.tosspayments.paymentsdk.view.PaymentMethod
-                android:id="@+id/payment_widget"
+                android:id="@+id/payment_method_widget"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/agreement_widget_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:padding="4dp"
+                android:textColor="@color/gray"
+                android:textSize="12sp" />
 
             <com.tosspayments.paymentsdk.view.Agreement
                 android:id="@+id/agreement_widget"

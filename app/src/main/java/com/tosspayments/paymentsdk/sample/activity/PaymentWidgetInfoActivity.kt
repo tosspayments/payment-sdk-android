@@ -1,23 +1,24 @@
 package com.tosspayments.paymentsdk.sample.activity
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
-import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetInfoBinding
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetInfoViewModel
+import com.tosspayments.paymentsdk.view.PaymentMethod
 import kotlinx.coroutines.launch
 
 class PaymentWidgetInfoActivity : AppCompatActivity() {
     private val viewModel: PaymentWidgetInfoViewModel by viewModels()
 
-    private lateinit var nextCta: Button
+    private lateinit var binding: ActivityPaymentWidgetInfoBinding
 
     companion object {
         private const val DEFAULT_CUSTOMER_KEY = "CUSTOMER_KEY"
@@ -29,7 +30,8 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_payment_widget_info)
+        binding = ActivityPaymentWidgetInfoBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         initViews()
         bindViewModel()
@@ -37,7 +39,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initViews() {
-        findViewById<AppCompatEditText>(R.id.payment_client_key).apply {
+        binding.paymentClientKey.run {
             addTextChangedListener {
                 viewModel.setClientKey(it.toString())
             }
@@ -45,7 +47,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_CLIENT_KEY)
         }
 
-        findViewById<AppCompatEditText>(R.id.payment_cutomer_key).apply {
+        binding.paymentCutomerKey.run {
             addTextChangedListener {
                 viewModel.setCustomerKey(it.toString())
             }
@@ -53,7 +55,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_CUSTOMER_KEY)
         }
 
-        findViewById<EditText>(R.id.payment_amount).apply {
+        binding.paymentAmount.run {
             addTextChangedListener {
                 val amount = try {
                     it.toString().toLong()
@@ -67,7 +69,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText("50000")
         }
 
-        findViewById<EditText>(R.id.payment_order_Id).apply {
+        binding.paymentOrderId.run {
             addTextChangedListener {
                 viewModel.setOrderId(it.toString())
             }
@@ -75,7 +77,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_ORDER_ID)
         }
 
-        findViewById<EditText>(R.id.payment_order_name).run {
+        binding.paymentOrderName.run {
             addTextChangedListener {
                 viewModel.setOrderName(it.toString())
             }
@@ -83,21 +85,20 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             setText(DEFAULT_ORDER_NAME)
         }
 
-        findViewById<EditText>(R.id.payment_redirect_url).run {
+        binding.paymentRedirectUrl.run {
             addTextChangedListener {
                 viewModel.setRedirectUrl(it.toString())
             }
 
             setText(DEFAULT_REDIRECT_URL)
         }
-
-        nextCta = findViewById(R.id.payment_next_cta)
     }
 
     private fun bindViewModel() {
         lifecycleScope.launch {
             viewModel.paymentEnableState.collect { uiState ->
-                nextCta.isEnabled = uiState != PaymentWidgetInfoViewModel.UiState.Invalid
+                binding.paymentNextCta.isEnabled =
+                    uiState != PaymentWidgetInfoViewModel.UiState.Invalid
 
                 val (isEnabled, clickListener) = when (uiState) {
                     is PaymentWidgetInfoViewModel.UiState.Invalid -> {
@@ -122,7 +123,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                     }
                 }
 
-                nextCta.run {
+                binding.paymentNextCta.run {
                     this.isEnabled = isEnabled
                     setOnClickListener(clickListener)
                 }

@@ -23,8 +23,8 @@ class PaymentWidget(
     paymentOptions: PaymentWidgetOptions? = null
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
-
     private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
+
     private val domain = try {
         if (!redirectUrl.isNullOrBlank()) {
             Uri.parse(redirectUrl).host
@@ -123,15 +123,19 @@ class PaymentWidget(
      * 결제 수단 위젯 렌더링
      * @param method : 결제 수단 위젯
      * @param amount : 결제 금액
+     * @param paymentWidgetStatusListener : 결제위젯 렌더링 이벤트 리스너
      * @since 2023/05/19
      */
     fun renderPaymentMethods(
         method: PaymentMethod,
-        amount: Number
+        amount: Number,
+        paymentWidgetStatusListener: PaymentWidgetStatusListener? = null
     ) {
         this.methodWidget = method.apply {
-            addJavascriptInterface(methodWidgetJavascriptInterface)
+            addPaymentWidgetStatusListener(paymentWidgetStatusListener)
         }
+
+        methodWidget?.addJavascriptInterface(methodWidgetJavascriptInterface)
 
         method.renderPaymentMethods(
             clientKey,
@@ -192,10 +196,17 @@ class PaymentWidget(
     /**
      * 이용약관 위젯 렌더링
      * @param agreement : 이용약관 위젯
+     * @param paymentWidgetStatusListener : 이용약관 위젯 렌더링 이벤트 리스너
      * @since 2023/05/19
      */
-    fun renderAgreement(agreement: Agreement) {
-        this.agreementWidget = agreement
+    @JvmOverloads
+    fun renderAgreement(
+        agreement: Agreement,
+        paymentWidgetStatusListener: PaymentWidgetStatusListener? = null
+    ) {
+        this.agreementWidget = agreement.apply {
+            addPaymentWidgetStatusListener(paymentWidgetStatusListener)
+        }
 
         agreement.apply {
             addJavascriptInterface(PaymentWidgetJavascriptInterface(agreement, messageEventHandler))
