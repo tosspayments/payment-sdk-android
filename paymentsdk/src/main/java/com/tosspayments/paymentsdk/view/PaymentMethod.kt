@@ -99,7 +99,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    class Rendering {
+    object Rendering {
         enum class Currency {
             KRW, AUD, EUR, GBP, HKD, JPY, SGD, USD
         }
@@ -113,8 +113,8 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
          */
         data class Amount(
             val value: Number,
-            val currency: Currency,
-            val country: String
+            val currency: Currency = Currency.KRW,
+            val country: String = "KR"
         )
 
         /**

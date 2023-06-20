@@ -132,22 +132,11 @@ class PaymentWidget(
         amount: Number,
         options: PaymentMethod.Rendering.Options? = null
     ) {
-        this.methodWidget = method.apply {
-            addJavascriptInterface(methodWidgetJavascriptInterface)
-        }
-
-        method.renderPaymentMethods(
-            clientKey,
-            customerKey,
-            amount,
-            options,
-            domain,
-            redirectUrl
-        )
+        renderPaymentMethods(method, PaymentMethod.Rendering.Amount(value = amount), options)
     }
 
     /**
-     * PayPal 해외간편결제 연동을 위한 결제 수단 위젯 렌더링.
+     * PayPal 해외간편결제 연동 지원 결제 수단 위젯 렌더링.
      * @param method : 결제 수단 위젯
      * @param amount : 결제 금액 정보
      * @param options : 결제위젯 렌더링 옵션
