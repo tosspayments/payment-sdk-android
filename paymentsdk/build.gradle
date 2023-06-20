@@ -60,7 +60,7 @@ afterEvaluate {
                 from components.liveRelease
                 groupId = 'com.tosspayments.sdk'
                 artifactId = 'payment'
-                version = '0.1.7'
+                version = project.property("versionName") as String
             }
         }
     }

@@ -13,6 +13,9 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     internal var orderId: String = ""
         private set
 
+    override val widgetName: String
+        get() = "paymentMethods"
+
     companion object {
         internal const val EVENT_NAME_CUSTOM_REQUESTED = "customRequest"
         internal const val EVENT_NAME_CUSTOM_METHOD_SELECTED = "customPaymentMethodSelect"

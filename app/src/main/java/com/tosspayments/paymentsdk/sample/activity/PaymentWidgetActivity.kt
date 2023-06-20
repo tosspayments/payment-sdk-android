@@ -1,27 +1,22 @@
 package com.tosspayments.paymentsdk.sample.activity
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
+import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetBinding
 import com.tosspayments.paymentsdk.sample.extension.toast
-import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
 
 class PaymentWidgetActivity : AppCompatActivity() {
-    private lateinit var methodWidget: PaymentMethod
-    private lateinit var agreementWidget: Agreement
-    private lateinit var paymentCta: Button
-    private lateinit var updateAmountCta: Button
+    private lateinit var binding: ActivityPaymentWidgetBinding
 
     private val paymentEventListener
         get() = object : PaymentMethodEventListener() {
@@ -53,10 +48,56 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
 
                 runOnUiThread {
-                    paymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                    binding.requestPaymentCta.isEnabled = agreementStatus.agreedRequiredTerms
                 }
             }
         }
+
+    private val paymentMethodWidgetStatusListener = object : PaymentWidgetStatusListener {
+        override fun onLoading() {
+            val message = "PaymentMethods loading"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+
+        override fun onLoaded() {
+            val message = "PaymentMethods loaded"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+
+        override fun onFailed() {
+            val message = "PaymentMethods failed"
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
+    }
+
+    private val agreementWidgetStatusListener = object : PaymentWidgetStatusListener {
+        override fun onLoading() {
+            val message = "Agreement loading"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+
+        override fun onLoaded() {
+            val message = "Agreement loaded"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+
+        override fun onFailed() {
+            val message = "Agreement failed"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+    }
 
     companion object {
         private const val TAG = "PaymentWidgetActivity"
@@ -89,9 +130,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_payment_widget)
-
-        initViews()
+        binding = ActivityPaymentWidgetBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         intent?.run {
             initPaymentWidget(
@@ -103,14 +143,6 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 getStringExtra(EXTRA_KEY_REDIRECT_URL),
             )
         }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun initViews() {
-        methodWidget = findViewById(R.id.payment_widget)
-        agreementWidget = findViewById(R.id.agreement_widget)
-        paymentCta = findViewById(R.id.request_payment_cta)
-        updateAmountCta = findViewById(R.id.change_amount_cta)
     }
 
     private fun initPaymentWidget(
@@ -133,14 +165,19 @@ class PaymentWidgetActivity : AppCompatActivity() {
         )
 
         paymentWidget.run {
-            renderPaymentMethods(methodWidget, amount)
-            renderAgreement(agreementWidget)
+            renderPaymentMethods(
+                binding.paymentMethodWidget,
+                amount,
+                paymentMethodWidgetStatusListener
+            )
+
+            renderAgreement(binding.agreementWidget, agreementWidgetStatusListener)
 
             addPaymentMethodEventListener(paymentEventListener)
             addAgreementStatusListener(agreementStatusListener)
         }
 
-        paymentCta.setOnClickListener {
+        binding.requestPaymentCta.setOnClickListener {
             paymentWidget.requestPayment(
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
                 paymentCallback = object : PaymentCallback {
@@ -155,7 +192,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             )
         }
 
-        updateAmountCta.setOnClickListener {
+        binding.changeAmountCta.setOnClickListener {
             showUpdateAmountDialog { inputAmount ->
                 paymentWidget.updateAmount(inputAmount)
             }
