@@ -23,8 +23,8 @@ class PaymentWidget(
     paymentOptions: PaymentWidgetOptions? = null
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
-
     private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
+
     private val domain = try {
         if (!redirectUrl.isNullOrBlank()) {
             Uri.parse(redirectUrl).host

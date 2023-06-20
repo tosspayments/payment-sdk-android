@@ -13,6 +13,9 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     internal var orderId: String = ""
         private set
 
+    override val widgetName: String
+        get() = "paymentMethods"
+
     companion object {
         internal const val EVENT_NAME_CUSTOM_REQUESTED = "customRequest"
         internal const val EVENT_NAME_CUSTOM_METHOD_SELECTED = "customPaymentMethodSelect"
@@ -20,28 +23,6 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
         internal const val MESSAGE_NOT_RENDERED =
             "PaymentMethod is not rendered. Call 'renderPaymentMethods' method first."
-    }
-
-    internal fun renderPaymentMethods(
-        clientKey: String,
-        customerKey: String,
-        amount: Number,
-        options: Rendering.Options? = null,
-        domain: String? = null,
-        redirectUrl: String? = null
-    ) {
-        val optionsJson = JSONObject().apply {
-            options?.let {
-                put("variantKey", it.variantKey)
-            }
-        }
-
-        val renderMethodScript =
-            "const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amount, $optionsJson);"
-
-        renderWidget(clientKey, customerKey, domain, redirectUrl) {
-            appendLine(renderMethodScript)
-        }
     }
 
     internal fun renderPaymentMethods(

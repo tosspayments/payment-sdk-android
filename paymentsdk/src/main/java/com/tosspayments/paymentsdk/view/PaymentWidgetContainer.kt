@@ -12,10 +12,15 @@ import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
+import com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener
 
 sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = null) :
     FrameLayout(context, attrs) {
     private val paymentWebView: PaymentWebView
+    private var statusListener: PaymentWidgetStatusListener? = null
+
+    protected open val widgetName: String
+        get() = ""
 
     protected var methodRenderCalled = false
 
@@ -24,9 +29,14 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
 
         internal const val EVENT_NAME = "name"
         internal const val EVENT_PARAMS = "params"
+
         internal const val EVENT_NAME_UPDATE_HEIGHT = "updateHeight"
+        internal const val EVENT_NAME_WIDGET_STATUS = "widgetStatus"
+
         internal const val EVENT_PARAM_PAYMENT_METHOD_KEY = "paymentMethodKey"
         internal const val EVENT_PARAM_HEIGHT = "height"
+        internal const val EVENT_PARAM_WIDGET = "widget"
+        internal const val EVENT_PARAM_STATUS = "status"
     }
 
     init {
@@ -104,6 +114,22 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
             javascriptInterface,
             INTERFACE_NAME_WIDGET
         )
+    }
+
+    fun addWidgetStatusListener(statusListener: PaymentWidgetStatusListener) {
+        this.statusListener = statusListener
+    }
+
+    internal fun updateWidgetStatus(widget: String, status: String) {
+        if (widget == widgetName) {
+            statusListener?.let {
+                when (status) {
+                    "loading" -> it.onLoading()
+                    "loaded" -> it.onLoaded()
+                    "failed" -> it.onFailed()
+                }
+            }
+        }
     }
 
     internal fun updateHeight(heightPx: Float?) {

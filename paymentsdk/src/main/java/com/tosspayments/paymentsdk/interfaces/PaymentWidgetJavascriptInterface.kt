@@ -21,6 +21,12 @@ open class PaymentWidgetJavascriptInterface(
                         params.getDouble(PaymentWidgetContainer.EVENT_PARAM_HEIGHT).toFloat()
                     )
                 }
+                PaymentWidgetContainer.EVENT_NAME_WIDGET_STATUS -> {
+                    paymentWidget?.updateWidgetStatus(
+                        params.getString(PaymentWidgetContainer.EVENT_PARAM_WIDGET),
+                        params.getString(PaymentWidgetContainer.EVENT_PARAM_STATUS)
+                    )
+                }
                 else -> {
                     messageHandler?.invoke(eventName, params)
                 }

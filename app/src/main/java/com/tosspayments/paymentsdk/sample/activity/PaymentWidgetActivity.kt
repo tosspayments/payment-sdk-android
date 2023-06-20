@@ -141,6 +141,20 @@ class PaymentWidgetActivity : AppCompatActivity() {
             PaymentMethod.Rendering.Options(variantKey = it)
         }
 
+        binding.paymentWidget.addWidgetStatusListener(object : PaymentWidgetStatusListener {
+            override fun onLoading() {
+                toast("PaymentMethods loading")
+            }
+
+            override fun onLoaded() {
+                toast("PaymentMethods loaded")
+            }
+
+            override fun onFailed() {
+                toast("PaymentMethods failed")
+            }
+        })
+
         paymentWidget.run {
             renderPaymentMethods(binding.paymentWidget, renderingAmount, renderingOptions)
             renderAgreement(binding.agreementWidget)
