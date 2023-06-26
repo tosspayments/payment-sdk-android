@@ -35,8 +35,8 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     ) {
         val amountJson = JSONObject().apply {
             put("value", amount.value)
-            put("currency", amount.currency.name.uppercase())
-            put("country", amount.country.uppercase())
+            put("currency", amount.currency.name)
+            put("country", amount.country)
         }
 
         val optionsJson = JSONObject().apply {
