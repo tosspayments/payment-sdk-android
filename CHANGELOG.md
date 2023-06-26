@@ -1,3 +1,13 @@
+# 0.1.8 (2023.06.26)
+
+## Added
+### 위젯 렌더링 status listener 추가
+com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener
+
+## Changed
+### renderPaymentMethods, renderAgreement 메서드 paymentWidgetStatusListener parameter 추가
+
+
 # 0.1.4 (2023.05.30)
 
 ## Added
