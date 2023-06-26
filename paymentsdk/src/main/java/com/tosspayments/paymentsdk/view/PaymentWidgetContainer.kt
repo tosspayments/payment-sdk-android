@@ -128,9 +128,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
             CoroutineScope(Dispatchers.Main).launch {
                 statusListener?.let {
                     when (status) {
-                        "loading" -> it.onLoading()
-                        "loaded" -> it.onLoaded()
-                        "failed" -> it.onFailed()
+                        "load" -> it.onLoad()
                     }
                 }
             }
