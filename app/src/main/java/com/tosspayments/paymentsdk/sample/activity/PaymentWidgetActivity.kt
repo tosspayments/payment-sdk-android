@@ -86,7 +86,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         fun getIntent(
             context: Context,
-            amount: Long,
+            amount: Number,
             clientKey: String,
             customerKey: String,
             orderId: String,
@@ -116,7 +116,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         intent?.run {
             initPaymentWidget(
-                amount = getLongExtra(EXTRA_KEY_AMOUNT, 0),
+                amount = getDoubleExtra(EXTRA_KEY_AMOUNT, 0.0),
                 clientKey = getStringExtra(EXTRA_KEY_CLIENT_KEY).orEmpty(),
                 customerKey = getStringExtra(EXTRA_KEY_CUSTOMER_KEY).orEmpty(),
                 orderId = getStringExtra(EXTRA_KEY_ORDER_ID).orEmpty(),
@@ -132,7 +132,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
     }
 
     private fun initPaymentWidget(
-        amount: Long,
+        amount: Number,
         clientKey: String,
         customerKey: String,
         orderId: String,
