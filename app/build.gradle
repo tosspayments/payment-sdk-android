@@ -77,8 +77,8 @@ dependencies {
     def lifecycle_version = "2.5.1"
     def compose_version = "1.2.1"
 
-    localImplementation project(':paymentsdk')
-    remoteImplementation 'com.github.tosspayments:payment-sdk-android:develop-SNAPSHOT'
+    implementation project(':paymentsdk')
+//    remoteImplementation 'com.github.tosspayments:payment-sdk-android:${project.property("versionName")}'
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.0'
