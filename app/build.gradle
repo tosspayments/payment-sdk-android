@@ -12,7 +12,7 @@ android {
     namespace 'com.tosspayments.paymentsdk.sample'
     compileSdk 33
 
-    flavorDimensions "server"
+    flavorDimensions "server", "source"
 
     defaultConfig {
         applicationId "com.tosspayments.paymentsdk.sample"
@@ -28,16 +28,24 @@ android {
         dev {
             dimension "server"
             applicationIdSuffix ".dev"
-
-
         }
+
         staging {
             dimension "server"
             applicationIdSuffix ".staging"
         }
+        
         live {
             dimension "server"
             applicationIdSuffix ".live"
+        }
+
+        local {
+            dimension "source"
+        }
+
+        remote {
+            dimension "source"
         }
     }
 
@@ -69,10 +77,8 @@ dependencies {
     def lifecycle_version = "2.5.1"
     def compose_version = "1.2.1"
 
-//    implementation "com.github.tosspayments:payment-sdk-android:${project.property("versionName")}"
-
-//    로컬 테스트시 해제
-    implementation project(':paymentsdk')
+    localImplementation project(':paymentsdk')
+    remoteImplementation "com.github.tosspayments:payment-sdk-android:${project.property("versionName")}"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.0'
