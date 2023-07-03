@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.*
 
 @SuppressLint("ApplySharedPref")
 class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(application) {
-    private val _amount = MutableStateFlow(0L)
+    private val _amount = MutableStateFlow<Number>(0.0)
     private val _clientKey = MutableStateFlow("")
     private val _customerKey = MutableStateFlow("")
     private val _orderId = MutableStateFlow("")
@@ -32,7 +32,7 @@ class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(ap
             _orderId,
             _orderName
         ) { amount, clientKey, customerKey, orderId, orderName ->
-            val isValid = amount > 0 && arrayOf(
+            val isValid = amount.toDouble() > 0 && arrayOf(
                 clientKey,
                 customerKey,
                 orderId,
@@ -61,7 +61,7 @@ class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(ap
         _customerKey.value = customerKey
     }
 
-    fun setAmount(amount: Long) {
+    fun setAmount(amount: Number) {
         _amount.value = amount
     }
 
@@ -84,7 +84,7 @@ class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(ap
     sealed class UiState {
         object Invalid : UiState()
         data class Valid(
-            val amount: Long,
+            val amount: Number,
             val clientKey: String,
             val customerKey: String,
             val orderId: String,

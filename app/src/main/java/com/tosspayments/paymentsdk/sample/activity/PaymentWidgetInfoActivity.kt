@@ -59,9 +59,9 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
         binding.paymentAmount.run {
             addTextChangedListener {
                 val amount = try {
-                    it.toString().toLong()
+                    it.toString().toDouble()
                 } catch (e: Exception) {
-                    0L
+                    0.0
                 }
 
                 viewModel.setAmount(amount)
