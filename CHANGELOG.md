@@ -1,3 +1,9 @@
+# 0.1.9 (2023.07.04)
+## Added
+### 해외결제 지원 및 멀티위젯 옵션 추가
+com.tosspayments.paymentsdk.PaymentWidget.renderPaymentMethods(com.tosspayments.paymentsdk.view.PaymentMethod, com.tosspayments.paymentsdk.view.PaymentMethod.Rendering.Amount, com.tosspayments.paymentsdk.view.PaymentMethod.Rendering.Options, com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener)
+
+
 # 0.1.8 (2023.06.26)
 
 ## Added
