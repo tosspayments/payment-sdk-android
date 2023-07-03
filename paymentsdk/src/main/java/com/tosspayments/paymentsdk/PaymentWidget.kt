@@ -148,7 +148,7 @@ class PaymentWidget(
      * @param amount : 결제 금액 정보
      * @param options : 결제위젯 렌더링 옵션
      * @param paymentWidgetStatusListener : 결제위젯 렌더링 이벤트 리스너
-     * @since 2023/06/20
+     * @since 2023/07/04
      */
     @JvmOverloads
     fun renderPaymentMethods(

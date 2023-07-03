@@ -90,7 +90,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
          * @property value : 결제 금액
          * @property currency: 결제 통화
          * @property country : 결제 국가 코드 (https://ko.wikipedia.org/wiki/ISO_3166-1_alpha-2)
-         * @since 2023/06/20
+         * @since 2023/07/04
          */
         data class Amount(
             val value: Number,
@@ -101,7 +101,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         /**
          * 결제위젯의 렌더링 옵션
          * @property variantKey : 멀티 결제 UI를 사용할 때 설정. 렌더링하고 싶은 결제위젯의 키 값
-         * @since 2023/06/20
+         * @since 2023/07/04
          */
         data class Options(
             val variantKey: String
