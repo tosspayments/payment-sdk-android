@@ -86,7 +86,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                         TossPaymentResult.Success(
                             paymentKey = uri.getQueryParameter(CONST_PAYMENT_KEY).orEmpty(),
                             orderId = uri.getQueryParameter(CONST_ORDER_ID).orEmpty(),
-                            amount = uri.getQueryParameter(CONST_AMOUNT)?.toLong() ?: 0,
+                            amount = uri.getQueryParameter(CONST_AMOUNT)?.toDouble() ?: 0,
                             additionalParameters = additionalParameters
                         )
                     )
