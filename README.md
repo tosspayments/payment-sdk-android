@@ -15,14 +15,15 @@
 프로젝트의 Gradle 설정을 아래와 같이 설정하세요.
 
 ```gradle
-// build.gradle(Project)
+// settings.gradle
 
-allprojects {
-     repositories {
-            ...
-        mavenCentral()
-        maven { url "https://jitpack.io" }
-     }
+dependencyResolutionManagement {
+  ...
+  repositories {
+    ...
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+  }
 }
 ```
 
