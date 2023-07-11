@@ -21,7 +21,7 @@ data class TossCardPaymentInfo(
 
     override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
         get() = {
-            cardCompany?.let { put("cardCompany", it) }
+            cardCompany?.let { put("cardCompany", it.code) }
             cardInstallmentPlan?.let { put("cardInstallmentPlan", it) }
             maxCardInstallmentPlan?.let { put("maxCardInstallmentPlan", it) }
             useCardPoint?.let { put("useCardPoint", it) }
