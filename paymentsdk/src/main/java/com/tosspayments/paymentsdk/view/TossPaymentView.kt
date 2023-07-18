@@ -123,26 +123,12 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
         } ?: false
     }
 
-
-    internal inner class TossPaymentJavascriptInterface {
-        @JavascriptInterface
-        fun onError(errorCode: String, message: String, orderId: String) {
-            callback?.onFailed(
-                TossPaymentResult.Fail(
-                    errorCode = errorCode,
-                    errorMessage = message,
-                    orderId = orderId
-                )
-            )
-        }
-    }
-
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 addJavascriptInterface(object : PaymentJavascriptInterface {
                     @JavascriptInterface
-                    fun onError(errorCode: String, message: String, orderId: String) {
+                    fun error(errorCode: String, message: String, orderId: String) {
                         callback?.onFailed(
                             TossPaymentResult.Fail(
                                 errorCode = errorCode,
@@ -172,7 +158,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
             .append("tossPayments.requestPayment(")
             .append("'${methodName}', ${jsonPayload})")
             .append(".catch(function (error) {")
-            .append("TossPayment.onError(error.code, error.message,'${orderId}');")
+            .append("TossPayment.error(error.code, error.message,'${orderId}');")
             .append("})")
             .toString()
 
