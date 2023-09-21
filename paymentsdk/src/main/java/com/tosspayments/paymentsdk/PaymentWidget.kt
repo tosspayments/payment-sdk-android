@@ -24,6 +24,7 @@ class PaymentWidget(
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
     private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
+    private var selectedPaymentMethod: SelectedPaymentMethod? = null
 
     private val domain = try {
         if (!redirectUrl.isNullOrBlank()) {
@@ -72,6 +73,11 @@ class PaymentWidget(
             }
             PaymentMethod.EVENT_NAME_CUSTOM_METHOD_UNSELECTED -> {
                 paymentMethodEventListener?.onCustomPaymentMethodUnselected(paymentMethodKey)
+            }
+            PaymentMethod.EVENT_NAME_CHANGE_PAYMENT_METHOD -> {
+                kotlin.runCatching { SelectedPaymentMethod.fromJson(params) }.getOrNull()?.let {
+                    selectedPaymentMethod = it
+                }
             }
             Agreement.EVENT_NAME_UPDATE_AGREEMENT_STATUS -> {
                 kotlin.runCatching { AgreementStatus.fromJson(params) }.getOrNull()?.let {
@@ -171,6 +177,15 @@ class PaymentWidget(
             domain,
             redirectUrl
         )
+    }
+
+    /**
+     * 고객이 선택한 결제수단
+     * @since TODO
+     */
+    @Throws(IllegalAccessException::class)
+    fun getSelectedPaymentMethod(): SelectedPaymentMethod {
+        return this.selectedPaymentMethod ?: throw IllegalAccessException(PaymentMethod.MESSAGE_NOT_RENDERED)
     }
 
     /**
