@@ -104,6 +104,11 @@ class PaymentWidget(
                     )
                 }
             }
+
+            @JavascriptInterface
+            fun error(errorCode: String, message: String, orderId: String?) {
+                methodWidget?.onFail(TossPaymentResult.Fail(errorCode, message, orderId))
+            }
         }
 
     private var methodWidget: PaymentMethod? = null
