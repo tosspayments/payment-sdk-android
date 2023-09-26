@@ -1,3 +1,15 @@
+# 0.1.12 (2023.09.26)
+## Added
+### 고객이 선택한 결제수단 반환
+com.tosspayments.paymentsdk.PaymentWidget.getSelectedPaymentMethod(): SelectedPaymentMethod
+
+### 위젯 렌더링 status listener에 onFail 메서드 추가
+com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener.onFail(fail: TossPaymentResult.Fail)
+
+| Parameter | Description |
+|-----------|-------------|
+| fail      | 에러 정보       |
+
 # 0.1.11 (2023.07.26)
 ## Fixed
 ### 결제 위젯에서 발생하는 Error Event 수신이 안되는 이슈 수정
