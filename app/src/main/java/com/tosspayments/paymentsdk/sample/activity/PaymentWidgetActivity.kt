@@ -60,11 +60,25 @@ class PaymentWidgetActivity : AppCompatActivity() {
             Log.d(TAG, message)
             binding.paymentMethodWidgetStatus.text = message
         }
+
+        override fun onFail(fail: TossPaymentResult.Fail) {
+            val message = fail.errorMessage
+
+            Log.d(TAG, message)
+            binding.paymentMethodWidgetStatus.text = message
+        }
     }
 
     private val agreementWidgetStatusListener = object : PaymentWidgetStatusListener {
         override fun onLoad() {
             val message = "Agreements loaded"
+
+            Log.d(TAG, message)
+            binding.agreementWidgetStatus.text = message
+        }
+
+        override fun onFail(fail: TossPaymentResult.Fail) {
+            val message = fail.errorMessage
 
             Log.d(TAG, message)
             binding.agreementWidgetStatus.text = message
