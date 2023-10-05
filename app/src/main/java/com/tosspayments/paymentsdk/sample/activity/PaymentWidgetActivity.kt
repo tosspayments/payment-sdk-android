@@ -9,7 +9,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.PaymentWidget
-import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetBinding
@@ -63,6 +62,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         override fun onFail(fail: TossPaymentResult.Fail) {
+            Log.d(TAG, fail.errorMessage)
             startActivity(
                 PaymentResultActivity.getIntent(
                     this@PaymentWidgetActivity,
@@ -86,10 +86,18 @@ class PaymentWidgetActivity : AppCompatActivity() {
         }
 
         override fun onFail(fail: TossPaymentResult.Fail) {
-            val message = fail.errorMessage
-
-            Log.d(TAG, message)
-            binding.agreementWidgetStatus.text = message
+            Log.d(TAG, fail.errorMessage)
+            startActivity(
+                PaymentResultActivity.getIntent(
+                    this@PaymentWidgetActivity,
+                    false,
+                    arrayListOf(
+                        "ErrorCode|${fail.errorCode}",
+                        "ErrorMessage|${fail.errorMessage}",
+                        "OrderId|${fail.orderId}"
+                    )
+                )
+            )
         }
     }
 

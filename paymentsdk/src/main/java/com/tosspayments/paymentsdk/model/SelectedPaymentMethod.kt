@@ -1,6 +1,5 @@
 package com.tosspayments.paymentsdk.model
 
-import android.util.Log
 import org.json.JSONObject
 
 data class SelectedPaymentMethod(
