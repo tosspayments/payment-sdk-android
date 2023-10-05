@@ -188,7 +188,7 @@ class PaymentWidget(
 
     /**
      * 고객이 선택한 결제수단
-     * @since TODO
+     * @since 2023/10/06
      */
     @Throws(IllegalAccessException::class)
     fun getSelectedPaymentMethod(): SelectedPaymentMethod {

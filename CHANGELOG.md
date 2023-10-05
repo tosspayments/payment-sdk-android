@@ -1,4 +1,4 @@
-# 0.1.12 (2023.09.26)
+# 0.1.12 (2023.10.06)
 ## Added
 ### 고객이 선택한 결제수단 반환
 com.tosspayments.paymentsdk.PaymentWidget.getSelectedPaymentMethod(): SelectedPaymentMethod
