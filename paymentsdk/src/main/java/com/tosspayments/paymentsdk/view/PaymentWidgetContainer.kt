@@ -13,6 +13,7 @@ import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener
+import com.tosspayments.paymentsdk.model.TossPaymentResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,7 +89,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
         appendWidgetRenderScript: StringBuilder.() -> StringBuilder
     ) {
         val paymentWidgetConstructor =
-            "PaymentWidget('$clientKey', '$customerKey', {'brandpay':{'redirectUrl':'${redirectUrl.orEmpty()}'}})"
+            "PaymentWidget('$clientKey', '$customerKey', 'payment-widget-android', {'brandpay':{'redirectUrl':'${redirectUrl.orEmpty()}'}})"
 
         val renderMethodScript = StringBuilder()
             .appendLine("var paymentWidget = $paymentWidgetConstructor;")
@@ -132,6 +133,12 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
                     }
                 }
             }
+        }
+    }
+
+    internal fun onFail(fail: TossPaymentResult.Fail) {
+        CoroutineScope(Dispatchers.Main).launch {
+            statusListener?.onFail(fail)
         }
     }
 
