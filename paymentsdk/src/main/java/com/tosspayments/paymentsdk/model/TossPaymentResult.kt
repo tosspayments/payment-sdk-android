@@ -14,6 +14,6 @@ sealed interface TossPaymentResult {
     ) : TossPaymentResult, Parcelable
 
     @Parcelize
-    class Fail(val errorCode: String, val errorMessage: String, val orderId: String) :
+    class Fail(val errorCode: String, val errorMessage: String, val orderId: String?) :
         TossPaymentResult, Parcelable
 }

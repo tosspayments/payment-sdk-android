@@ -128,7 +128,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
                 addJavascriptInterface(object : PaymentJavascriptInterface {
                     @JavascriptInterface
-                    fun error(errorCode: String, message: String, orderId: String) {
+                    fun error(errorCode: String, message: String, orderId: String?) {
                         callback?.onFailed(
                             TossPaymentResult.Fail(
                                 errorCode = errorCode,

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +25,7 @@ class PaymentWidget(
 ) {
     private val tossPayments: TossPayments = TossPayments(clientKey)
     private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
+    private var selectedPaymentMethod: SelectedPaymentMethod? = null
 
     private val domain = try {
         if (!redirectUrl.isNullOrBlank()) {
@@ -73,6 +75,12 @@ class PaymentWidget(
             PaymentMethod.EVENT_NAME_CUSTOM_METHOD_UNSELECTED -> {
                 paymentMethodEventListener?.onCustomPaymentMethodUnselected(paymentMethodKey)
             }
+            PaymentMethod.EVENT_NAME_CHANGE_PAYMENT_METHOD -> {
+                kotlin.runCatching { SelectedPaymentMethod.fromJson(params) }.getOrNull()?.let {
+                    selectedPaymentMethod = it
+                    Log.d("selectedPaymentMethod", it.toString())
+                }
+            }
             Agreement.EVENT_NAME_UPDATE_AGREEMENT_STATUS -> {
                 kotlin.runCatching { AgreementStatus.fromJson(params) }.getOrNull()?.let {
                     agreementStatusListener?.onAgreementStatusChanged(it)
@@ -97,6 +105,11 @@ class PaymentWidget(
                         TossPaymentsWebActivity.getIntent(it, domain, html)
                     )
                 }
+            }
+
+            @JavascriptInterface
+            fun error(errorCode: String, message: String, orderId: String?) {
+                methodWidget?.onFail(TossPaymentResult.Fail(errorCode, message, orderId))
             }
         }
 
@@ -171,6 +184,15 @@ class PaymentWidget(
             domain,
             redirectUrl
         )
+    }
+
+    /**
+     * 고객이 선택한 결제수단
+     * @since 2023/10/06
+     */
+    @Throws(IllegalAccessException::class)
+    fun getSelectedPaymentMethod(): SelectedPaymentMethod {
+        return this.selectedPaymentMethod ?: throw IllegalAccessException(PaymentMethod.MESSAGE_NOT_RENDERED)
     }
 
     /**

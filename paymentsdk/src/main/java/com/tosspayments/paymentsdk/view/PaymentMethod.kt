@@ -20,6 +20,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         internal const val EVENT_NAME_CUSTOM_REQUESTED = "customRequest"
         internal const val EVENT_NAME_CUSTOM_METHOD_SELECTED = "customPaymentMethodSelect"
         internal const val EVENT_NAME_CUSTOM_METHOD_UNSELECTED = "customPaymentMethodUnselect"
+        internal const val EVENT_NAME_CHANGE_PAYMENT_METHOD = "changePaymentMethod"
 
         internal const val MESSAGE_NOT_RENDERED =
             "PaymentMethod is not rendered. Call 'renderPaymentMethods' method first."
