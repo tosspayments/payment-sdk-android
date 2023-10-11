@@ -216,6 +216,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                     }
                 }
             )
+            Log.d("selectedPaymentMethod", paymentWidget.getSelectedPaymentMethod().toString())
         }
 
         binding.changeAmountCta.setOnClickListener {
