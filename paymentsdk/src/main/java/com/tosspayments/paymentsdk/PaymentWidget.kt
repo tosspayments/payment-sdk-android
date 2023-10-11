@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -78,7 +77,6 @@ class PaymentWidget(
             PaymentMethod.EVENT_NAME_CHANGE_PAYMENT_METHOD -> {
                 kotlin.runCatching { SelectedPaymentMethod.fromJson(params) }.getOrNull()?.let {
                     selectedPaymentMethod = it
-                    Log.d("selectedPaymentMethod", it.toString())
                 }
             }
             Agreement.EVENT_NAME_UPDATE_AGREEMENT_STATUS -> {

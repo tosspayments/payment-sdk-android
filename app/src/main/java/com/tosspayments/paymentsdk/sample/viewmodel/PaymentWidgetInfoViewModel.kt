@@ -6,8 +6,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.tosspayments.paymentsdk.sample.extension.combine
 import com.tosspayments.paymentsdk.view.PaymentMethod
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 
 @SuppressLint("ApplySharedPref")
 class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(application) {
@@ -30,8 +34,9 @@ class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(ap
             _clientKey,
             _customerKey,
             _orderId,
-            _orderName
-        ) { amount, clientKey, customerKey, orderId, orderName ->
+            _orderName,
+            _redirectUrl,
+        ) { amount, clientKey, customerKey, orderId, orderName, redirectUrl ->
             val isValid = amount.toDouble() > 0 && arrayOf(
                 clientKey,
                 customerKey,
@@ -48,7 +53,7 @@ class PaymentWidgetInfoViewModel(application: Application) : AndroidViewModel(ap
                     customerKey = customerKey,
                     orderId = orderId,
                     orderName = orderName,
-                    redirectUrl = _redirectUrl.value
+                    redirectUrl = redirectUrl,
                 )
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), UiState.Invalid)
