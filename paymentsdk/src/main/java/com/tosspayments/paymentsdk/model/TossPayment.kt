@@ -12,7 +12,7 @@ internal interface TossPayment {
         paymentHtml: String,
         orderId : String,
         paymentResultLauncher: ActivityResultLauncher<Intent>,
-        domain : String? = null
+        redirectUrl : String? = null
     )
 
     fun requestPayment(
@@ -20,7 +20,7 @@ internal interface TossPayment {
         paymentHtml: String,
         orderId : String,
         requestCode: Int,
-        domain : String? = null
+        redirectUrl : String? = null
     )
 
     fun requestPayment(

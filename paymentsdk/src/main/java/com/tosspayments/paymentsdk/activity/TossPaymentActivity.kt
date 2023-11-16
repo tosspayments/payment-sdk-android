@@ -21,13 +21,13 @@ internal class TossPaymentActivity : AppCompatActivity() {
             clientKey: String,
             method: TossPaymentMethod,
             tossPaymentInfo: TossPaymentInfo,
-            domain: String? = null
+            redirectUrl: String? = null
         ): Intent {
             return Intent(context, TossPaymentActivity::class.java).apply {
                 putExtra(TossPayments.EXTRA_CLIENT_KEY, clientKey)
                 putExtra(TossPayments.EXTRA_METHOD, method.displayName)
                 putExtra(TossPayments.EXTRA_PAYMENT_INFO, tossPaymentInfo.getPayload().toString())
-                putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
+                putExtra(Constants.EXTRA_KEY_REDIRECT_URL, redirectUrl)
             }
         }
 
@@ -35,12 +35,12 @@ internal class TossPaymentActivity : AppCompatActivity() {
             context: Context,
             dom: String,
             orderId: String,
-            domain: String? = null
+            redirectUrl: String? = null
         ): Intent {
             return Intent(context, TossPaymentActivity::class.java)
                 .putExtra(TossPayments.EXTRA_PAYMENT_DOM, dom)
                 .putExtra(TossPayments.EXTRA_ORDER_ID, orderId)
-                .putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
+                .putExtra(Constants.EXTRA_KEY_REDIRECT_URL, redirectUrl)
         }
     }
 
@@ -104,7 +104,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
         }
         val paymentDom = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_DOM)
         val paymentCanceledMessage = "Payment has been canceled by the customer"
-        val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
+        val redirectUrl = intent?.getStringExtra(Constants.EXTRA_KEY_REDIRECT_URL)
 
         val errorMessage = when {
             !paymentDom.isNullOrBlank() -> paymentCanceledMessage
@@ -128,7 +128,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
 
         when {
             !paymentDom.isNullOrBlank() -> {
-                viewPayment?.requestPaymentHtml(paymentDom, domain) ?: kotlin.run { finish() }
+                viewPayment?.requestPaymentHtml(paymentDom, redirectUrl) ?: kotlin.run { finish() }
             }
             !methodName.isNullOrBlank() && !clientKey.isNullOrBlank() && !paymentPayload.isNullOrBlank() -> {
                 viewPayment?.requestPayment(clientKey, methodName, paymentPayload)

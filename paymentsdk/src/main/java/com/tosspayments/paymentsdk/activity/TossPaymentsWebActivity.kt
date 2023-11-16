@@ -14,9 +14,9 @@ import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
-        fun getIntent(context: Context, domain: String?, data: String): Intent {
+        fun getIntent(context: Context, redirectUrl: String?, data: String): Intent {
             return Intent(context, TossPaymentsWebActivity::class.java)
-                .putExtra(Constants.EXTRA_KEY_DOMAIN, domain)
+                .putExtra(Constants.EXTRA_KEY_REDIRECT_URL, redirectUrl)
                 .putExtra(Constants.EXTRA_KEY_DATA, data)
         }
     }
@@ -61,8 +61,8 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun handleIntent(intent: Intent?) {
         val html = intent?.getStringExtra(Constants.EXTRA_KEY_DATA).orEmpty()
-        val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN).orEmpty()
-        webView.loadHtml(html, domain)
+        val redirectUrl = intent?.getStringExtra(Constants.EXTRA_KEY_REDIRECT_URL).orEmpty()
+        webView.loadHtml(html, redirectUrl)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

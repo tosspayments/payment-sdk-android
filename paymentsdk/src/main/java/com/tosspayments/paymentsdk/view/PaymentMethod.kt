@@ -31,7 +31,6 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         customerKey: String,
         amount: Rendering.Amount,
         options: Rendering.Options? = null,
-        domain: String? = null,
         redirectUrl: String? = null
     ) {
         val amountJson = JSONObject().apply {
@@ -49,7 +48,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         val renderMethodScript =
             "const paymentMethods = paymentWidget.renderPaymentMethods('#payment-method', $amountJson, $optionsJson);"
 
-        renderWidget(clientKey, customerKey, domain, redirectUrl) {
+        renderWidget(clientKey, customerKey, redirectUrl) {
             appendLine(renderMethodScript)
         }
     }

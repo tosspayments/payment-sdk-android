@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.net.http.SslError
 import android.util.AttributeSet
 import android.util.Base64
 import android.util.DisplayMetrics
@@ -33,11 +34,23 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     }
 
     internal fun loadHtml(
-        domain: String?,
+        redirectUrl: String?,
         htmlFileName: String,
         onPageFinished: WebView.() -> Unit,
         shouldOverrideUrlLoading: Uri?.() -> Boolean
     ) {
+        val (scheme, domain) = try {
+            if (!redirectUrl.isNullOrBlank()) {
+                with(Uri.parse(redirectUrl)) {
+                    scheme to host
+                }
+            } else {
+                null to null
+            }
+        } catch (e: Exception) {
+            null to null
+        }
+
         val host = if (domain.isNullOrBlank()) {
             "https://appassets.androidplatform.net"
         } else {
@@ -77,12 +90,35 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
             ): Boolean {
                 return shouldOverrideUrlLoading(request.url)
             }
+
+            override fun onReceivedSslError(
+                view: WebView?,
+                handler: SslErrorHandler?,
+                error: SslError?
+            ) {
+                @SuppressLint("WebViewClientOnReceivedSslError")
+                if (scheme == "http") {
+                    handler?.proceed()
+                } else {
+                    super.onReceivedSslError(view, handler, error)
+                    ; }
+            }
         }
 
         loadUrl(htmlFileUrl)
     }
 
-    fun loadHtml(html: String, domain: String? = null) {
+    fun loadHtml(html: String, redirectUrl: String?) {
+        val domain = try {
+            if (!redirectUrl.isNullOrBlank()) {
+                Uri.parse(redirectUrl).host
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+
         if (domain.isNullOrBlank()) {
             loadData(
                 Base64.encodeToString(html.toByteArray(), Base64.NO_PADDING),

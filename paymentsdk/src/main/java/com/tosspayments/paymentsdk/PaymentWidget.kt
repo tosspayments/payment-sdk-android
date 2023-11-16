@@ -3,7 +3,6 @@ package com.tosspayments.paymentsdk
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,16 +24,6 @@ class PaymentWidget(
     private val tossPayments: TossPayments = TossPayments(clientKey)
     private val redirectUrl = paymentOptions?.brandPayOption?.redirectUrl
     private var selectedPaymentMethod: SelectedPaymentMethod? = null
-
-    private val domain = try {
-        if (!redirectUrl.isNullOrBlank()) {
-            Uri.parse(redirectUrl).host
-        } else {
-            null
-        }
-    } catch (e: Exception) {
-        null
-    }
 
     private val htmlRequestActivityResult =
         activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -100,7 +89,7 @@ class PaymentWidget(
             fun requestHTML(html: String) {
                 methodWidget?.context?.let {
                     htmlRequestActivityResult.launch(
-                        TossPaymentsWebActivity.getIntent(it, domain, html)
+                        TossPaymentsWebActivity.getIntent(it, redirectUrl, html)
                     )
                 }
             }
@@ -125,7 +114,7 @@ class PaymentWidget(
                 paymentHtml = paymentHtml,
                 orderId = orderId,
                 paymentResultLauncher = paymentResultLauncher,
-                domain = domain
+                redirectUrl = redirectUrl
             )
         }
     }
@@ -179,7 +168,6 @@ class PaymentWidget(
             customerKey,
             amount,
             options,
-            domain,
             redirectUrl
         )
     }

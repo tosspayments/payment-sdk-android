@@ -67,10 +67,10 @@ class TossPayments(private val clientKey: String) : TossPayment {
         paymentHtml: String,
         orderId: String,
         paymentResultLauncher: ActivityResultLauncher<Intent>,
-        domain: String?
+        redirectUrl: String?
     ) {
         paymentResultLauncher.launch(
-            TossPaymentActivity.getIntent(context, paymentHtml, orderId, domain)
+            TossPaymentActivity.getIntent(context, paymentHtml, orderId, redirectUrl)
         )
     }
 
@@ -79,10 +79,10 @@ class TossPayments(private val clientKey: String) : TossPayment {
         paymentHtml: String,
         orderId: String,
         requestCode: Int,
-        domain: String?
+        redirectUrl: String?
     ) {
         (context as? Activity)?.startActivityForResult(
-            TossPaymentActivity.getIntent(context, paymentHtml, orderId, domain),
+            TossPaymentActivity.getIntent(context, paymentHtml, orderId, redirectUrl),
             requestCode
         )
     }

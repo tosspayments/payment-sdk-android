@@ -84,7 +84,6 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
     protected fun renderWidget(
         clientKey: String,
         customerKey: String,
-        domain: String? = null,
         redirectUrl: String? = null,
         appendWidgetRenderScript: StringBuilder.() -> StringBuilder
     ) {
@@ -97,7 +96,7 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
             .toString()
 
         paymentWebView.loadHtml(
-            domain,
+            redirectUrl,
             "tosspayment_widget.html",
             {
                 evaluateJavascript(renderMethodScript)
