@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="str_demo_app_name">FinCube Card READER</string>
+
+
+    <string name="str_btn_stoptscan">스캔 취소</string>
+    <string name="str_btn_rotatescan">방향회전</string>
+
+    <string name="str_guide_top">카드를 인식합니다.</string>
+    <string name="str_guide_bottom">카드를 네모에 갖다 놓으세요. 자동으로 인식됩니다.</string>
+
+</resources>

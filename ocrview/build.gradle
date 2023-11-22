@@ -1,0 +1,43 @@
+apply plugin: 'com.android.library'
+
+ext {
+    build_time = new Date().format("MM/dd/yyyy HH:mm:ss Z")
+    build_year = new Date().format("yyyy")
+    product_name = "fincube.ocr-Android-SDK"
+    product_version = "Customer version"
+}
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '27.0.3'
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 23
+        buildConfigField "String", "PRODUCT_NAME", "\"${product_name}\""
+        buildConfigField "String", "PRODUCT_VERSION", "\"${product_version}\""
+        buildConfigField "String", "BUILD_TIME", "\"${build_time}\""
+        consumerProguardFiles 'release-proguard.cfg'
+    }
+
+    buildTypes {
+        debug {
+        }
+
+        release {
+            //minifyEnabled false
+            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-build.cfg'
+        }
+    }
+
+    lintOptions {
+        disable "ResourceType"
+    }
+
+
+}
+
+
+dependencies {
+    api 'com.android.support:appcompat-v7:23.+'
+    api project(':OcrEngine')
+}

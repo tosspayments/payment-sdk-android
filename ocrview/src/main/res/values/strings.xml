@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+
+
+    <string name="str_demo_app_name">FinCube Card READER</string>
+
+
+    <string name="str_btn_stoptscan">Cancel</string>
+   <string name="str_btn_rotatescan">Rotate</string>
+
+    <string name="str_guide_top">Read card number and expiry date.</string>
+    <string name="str_guide_bottom">Plaese put the card in the box.</string>
+
+
+</resources>
