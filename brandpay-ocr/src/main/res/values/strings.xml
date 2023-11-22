@@ -1,0 +1,5 @@
+<resources>
+    <string name="confirm">확인</string>
+
+    <string name="camera_permission_required_message">카드 스캔 실행을 위해서 카메라 권한이 필요합니다.</string>
+</resources>
