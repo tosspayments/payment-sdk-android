@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
+import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
+import org.json.JSONObject
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
@@ -22,6 +24,14 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
     }
 
     private lateinit var webView: PaymentWebView
+
+    private val brandPayAuthWebManager = BrandPayAuthWebManager(this).apply {
+        callback = object : BrandPayAuthWebManager.Callback {
+            override fun onPostScript(script: String) {
+                webView.loadUrl(script)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +56,8 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
                     handleSuccessResponse(response)
                 }
             }, PaymentWebView.INTERFACE_NAME_PAYMENT)
+
+            brandPayAuthWebManager.addJavascriptInterface(this)
         }
     }
 
