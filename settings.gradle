@@ -18,6 +18,3 @@ rootProject.name = "TossPaymentSdk"
 include ':app'
 include ':paymentsdk'
 include ':brandpay-auth'
-include ':OcrEngine'
-include ':ocrview'
-include ':brandpay-ocr'
