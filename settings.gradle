@@ -17,4 +17,3 @@ dependencyResolutionManagement {
 rootProject.name = "TossPaymentSdk"
 include ':app'
 include ':paymentsdk'
-include ':brandpay-auth'

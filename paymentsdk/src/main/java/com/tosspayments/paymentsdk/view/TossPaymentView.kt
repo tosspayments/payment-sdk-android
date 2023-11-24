@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
 import android.widget.FrameLayout
-import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
+import com.tosspayments.paymentsdk.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface

@@ -1,4 +1,4 @@
-package com.tosspayments.android.auth.utils
+package com.tosspayments.paymentsdk.auth.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -7,7 +7,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import com.tosspayments.android.auth.persistences.BrandPayUtilPreference
+import com.tosspayments.paymentsdk.auth.persistences.BrandPayUtilPreference
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.PublicKey
@@ -73,7 +73,7 @@ internal object BioMetricUtil {
     }
 
     fun hasBioMetricAuth(context: Context): Boolean {
-        if (!::preference.isInitialized) {
+        if (!BioMetricUtil::preference.isInitialized) {
             preference = BrandPayUtilPreference.getInstance(context)
         }
 
@@ -82,7 +82,7 @@ internal object BioMetricUtil {
 
     @Throws
     fun getBioMetricAuth(context: Context, modulus: String, exponent: String): String {
-        if (!::preference.isInitialized) {
+        if (!BioMetricUtil::preference.isInitialized) {
             preference = BrandPayUtilPreference.getInstance(context)
         }
 
@@ -94,7 +94,7 @@ internal object BioMetricUtil {
     }
 
     fun registerBioMetricAuth(context: Context, token: String?): Boolean {
-        if (!::preference.isInitialized) {
+        if (!BioMetricUtil::preference.isInitialized) {
             preference = BrandPayUtilPreference.getInstance(context)
         }
 
@@ -107,7 +107,7 @@ internal object BioMetricUtil {
     }
 
     fun unregisterBioMetricAuth(context: Context) {
-        if (!::preference.isInitialized) {
+        if (!BioMetricUtil::preference.isInitialized) {
             preference = BrandPayUtilPreference.getInstance(context)
         }
 

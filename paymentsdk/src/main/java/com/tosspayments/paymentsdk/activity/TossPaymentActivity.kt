@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
-import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
+import com.tosspayments.paymentsdk.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback

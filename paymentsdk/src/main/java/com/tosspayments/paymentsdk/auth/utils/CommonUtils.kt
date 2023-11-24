@@ -1,4 +1,4 @@
-package com.tosspayments.android.auth.utils
+package com.tosspayments.paymentsdk.auth.utils
 
 import android.content.Context
 import android.content.res.ColorStateList

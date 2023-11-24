@@ -12,6 +12,14 @@ android {
     namespace = 'com.tosspayments.paymentsdk'
     flavorDimensions "server"
 
+    file("../versions.properties").withInputStream {
+        def props = new Properties()
+        props.load(it)
+        props.forEach { key, value ->
+            ext[key] = value
+        }
+    }
+
     defaultConfig {
         minSdk 21
         targetSdk 33
@@ -33,7 +41,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "MODULE_VERSION_NAME", "\"${paymentSDK}\""
+        }
+
         release {
+            buildConfigField "String", "MODULE_VERSION_NAME", "\"${paymentSDK}\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -67,13 +80,14 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation project(':brandpay-auth')
-
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'
 
     implementation "androidx.webkit:webkit:1.6.0"
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation "androidx.biometric:biometric:1.1.0"
+    implementation "androidx.security:security-crypto:1.1.0-alpha03"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

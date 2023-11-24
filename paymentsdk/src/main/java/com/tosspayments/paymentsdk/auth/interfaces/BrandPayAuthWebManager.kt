@@ -1,4 +1,4 @@
-package com.tosspayments.android.auth.interfaces
+package com.tosspayments.paymentsdk.auth.interfaces
 
 import android.annotation.SuppressLint
 import android.webkit.JavascriptInterface
@@ -8,9 +8,9 @@ import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
-import com.tosspayments.android.auth.model.ErrorCode
-import com.tosspayments.android.auth.utils.BioMetricUtil
-import com.tosspayments.android.auth.utils.BrandPayAuthManager
+import com.tosspayments.paymentsdk.auth.model.ErrorCode
+import com.tosspayments.paymentsdk.auth.utils.BioMetricUtil
+import com.tosspayments.paymentsdk.auth.utils.BrandPayAuthManager
 import java.lang.ref.WeakReference
 
 class BrandPayAuthWebManager(activity: FragmentActivity) {

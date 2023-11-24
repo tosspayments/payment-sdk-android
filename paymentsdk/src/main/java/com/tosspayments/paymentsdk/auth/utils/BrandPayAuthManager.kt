@@ -1,11 +1,11 @@
-package com.tosspayments.android.auth.utils
+package com.tosspayments.paymentsdk.auth.utils
 
 import android.content.Context
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
-import com.tosspayments.android.auth.model.AppInfo
-import com.tosspayments.android.auth.model.ErrorCode
+import com.tosspayments.paymentsdk.auth.model.AppInfo
+import com.tosspayments.paymentsdk.auth.model.ErrorCode
 
 object BrandPayAuthManager {
     @JvmStatic

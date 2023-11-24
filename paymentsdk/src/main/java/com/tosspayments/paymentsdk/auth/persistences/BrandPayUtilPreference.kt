@@ -1,4 +1,4 @@
-package com.tosspayments.android.auth.persistences
+package com.tosspayments.paymentsdk.auth.persistences
 
 import android.annotation.SuppressLint
 import android.content.Context

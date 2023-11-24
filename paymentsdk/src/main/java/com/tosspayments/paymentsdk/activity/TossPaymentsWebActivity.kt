@@ -6,13 +6,12 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
-import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
+import com.tosspayments.paymentsdk.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
-import org.json.JSONObject
 
 internal class TossPaymentsWebActivity : AppCompatActivity() {
     companion object {
