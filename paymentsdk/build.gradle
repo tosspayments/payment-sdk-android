@@ -67,6 +67,7 @@ afterEvaluate {
 }
 
 dependencies {
+//    implememtation 'com.github.tosspayments:payment-sdk-android:feat~auth-bio-2-SNAPSHOT'
     implementation project(':brandpay-auth')
 
     implementation 'androidx.core:core-ktx:1.7.0'
