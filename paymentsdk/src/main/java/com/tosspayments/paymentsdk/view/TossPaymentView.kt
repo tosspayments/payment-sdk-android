@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.webkit.*
 import android.widget.FrameLayout
+import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
@@ -173,6 +174,11 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
 
             loadHtml(html, domain)
         }
+    }
+
+
+    internal fun addJavascriptInterface(brandPayAuthWebManager : BrandPayAuthWebManager) {
+        brandPayAuthWebManager.addJavascriptInterface(paymentWebView)
     }
 
     private fun requestPayment(paymentInfoPayload: String) {

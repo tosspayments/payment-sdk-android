@@ -3,7 +3,9 @@ package com.tosspayments.paymentsdk.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import com.tosspayments.android.auth.interfaces.BrandPayAuthWebManager
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
@@ -45,6 +47,14 @@ internal class TossPaymentActivity : AppCompatActivity() {
     }
 
     private var viewPayment: TossPaymentView? = null
+
+    private val brandPayAuthWebManager = BrandPayAuthWebManager(this).apply {
+        callback = object : BrandPayAuthWebManager.Callback {
+            override fun onPostScript(script: String) {
+                findViewById<WebView>(R.id.webview_payment).loadUrl(script)
+            }
+        }
+    }
 
     private val paymentCallback: TossPaymentCallback
         get() = object : TossPaymentCallback {
@@ -88,6 +98,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
     private fun initViews() {
         viewPayment = findViewById<TossPaymentView>(R.id.payment_view).apply {
             callback = paymentCallback
+            addJavascriptInterface(brandPayAuthWebManager)
         }
     }
 
