@@ -72,7 +72,7 @@ afterEvaluate {
 
 def getBrandpayAuthVersion() {
     def properties = new Properties()
-    file('version.properties').withInputStream {
+    file('versions.properties').withInputStream {
         properties.load(it)
     }
     return properties.getProperty('brandPayAuth')
