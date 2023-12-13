@@ -206,7 +206,7 @@ class PaymentWidget(
     ) {
         try {
             this.paymentCallback = paymentCallback
-            methodWidget?.requestPayment(paymentInfo, redirectUrl)
+            methodWidget?.requestPayment(paymentInfo)
         } catch (e: Exception) {
             this.paymentCallback = null
             throw e
