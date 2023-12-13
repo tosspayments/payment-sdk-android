@@ -55,15 +55,10 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
     }
 
     @Throws(IllegalAccessException::class)
-    internal fun requestPayment(paymentInfo: PaymentInfo, redirectUrl: String?) {
+    internal fun requestPayment(paymentInfo: PaymentInfo) {
         if (methodRenderCalled) {
             this.orderId = paymentInfo.orderId
-
-            val requestPaymentPayload = paymentInfo.getPayload().put(
-                "redirectUrl",
-                JSONObject().put("brandpay", JSONObject().put("redirectUrl", redirectUrl))
-            )
-
+            val requestPaymentPayload = paymentInfo.getPayload()
             evaluateJavascript("paymentWidget.requestPaymentForNativeSDK($requestPaymentPayload)")
         } else {
             this.orderId = ""
