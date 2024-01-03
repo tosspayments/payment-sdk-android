@@ -1,3 +1,7 @@
+# 0.1.14 (2024.01.03)
+## Added
+### requestPayment의 PaymentInfo에 useInternationalCardOnly 파라미터 추가
+
 # 0.1.13 (2023.12.13)
 ## Fixed
 ### 카드사 결제 페이지에서 취소 시 에러 화면으로 이동하는 이슈 수정
