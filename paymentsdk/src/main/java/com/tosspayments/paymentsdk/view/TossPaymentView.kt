@@ -118,6 +118,13 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                     }
                 }
             } else {
+                /*
+                 * 삼성카드 백신 앱 onestore 링크 대응
+                 */
+                if (requestedUrl.startsWith("https://m.onestore") || requestedUrl.startsWith("https://onesto.re")) {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    return true
+                }
                 return false
             }
         } ?: false
