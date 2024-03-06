@@ -1,3 +1,7 @@
+# 0.1.15 (2024.03.06)
+## Fixed
+### 삼성카드 일반결제 백신 앱 (vguard) 이슈 대응
+
 # 0.1.14 (2024.01.03)
 ## Added
 ### requestPayment의 PaymentInfo에 useInternationalCardOnly 파라미터 추가
