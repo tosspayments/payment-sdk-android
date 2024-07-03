@@ -103,7 +103,7 @@ internal class TossPaymentActivity : AppCompatActivity() {
             }
         }
         val paymentDom = intent?.getStringExtra(TossPayments.EXTRA_PAYMENT_DOM)
-        val paymentCanceledMessage = "Payment has been canceled by the customer"
+        val paymentCanceledMessage = "사용자에 의해 결제가 취소되었습니다."
         val domain = intent?.getStringExtra(Constants.EXTRA_KEY_DOMAIN)
 
         val errorMessage = when {
