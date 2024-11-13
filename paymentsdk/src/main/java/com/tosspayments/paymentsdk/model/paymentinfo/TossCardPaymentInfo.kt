@@ -18,6 +18,7 @@ data class TossCardPaymentInfo(
     var flowMode: TossCardPaymentFlow = TossCardPaymentFlow.DEFAULT
     var easyPay: TossEasyPayCompany? = null
     var discountCode: String? = null
+    var currency: Currency? = null
 
     override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
         get() = {
@@ -55,6 +56,8 @@ data class TossCardPaymentInfo(
                 easyPay?.let { put("easyPay", it) }
                 discountCode?.let { put("discountCode", it) }
             }
+
+            currency?.let { put("currency", it.name) }
 
             put("flowMode", flowMode)
         }
