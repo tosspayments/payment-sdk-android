@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.sample.activity
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.tosspayments.paymentsdk.model.paymentinfo.Currency
 import com.tosspayments.paymentsdk.sample.viewmodel.CardPaymentViewModel
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentCompany
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentFlow
@@ -25,6 +26,7 @@ class CardPaymentActivity : PaymentActivity<TossCardPaymentInfo>() {
         FlowMode()
         EasyPay()
         DiscountCode()
+        Currency()
     }
 
     @Composable
@@ -185,6 +187,17 @@ class CardPaymentActivity : PaymentActivity<TossCardPaymentInfo>() {
                 initInputText = viewModel.discountCode.collectAsState().value.orEmpty()
             ) {
                 viewModel.setDiscountCode(it)
+            }
+        }
+    }
+
+    @Composable
+    private fun Currency() {
+        ItemSelectDialog("통화",
+            buttonText = viewModel.currency.collectAsState().value?.name ?: "통화 선택",
+            items = Currency.values().map { Pair(it.name, it) }) {
+            it?.let {
+                viewModel.setCurrency(it)
             }
         }
     }

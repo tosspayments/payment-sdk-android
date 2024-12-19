@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.sample.viewmodel
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import com.tosspayments.paymentsdk.model.paymentinfo.Currency
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentCompany
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentFlow
 import com.tosspayments.paymentsdk.model.paymentinfo.TossCardPaymentInfo
@@ -30,6 +31,7 @@ class CardPaymentViewModel : BasePaymentViewModel<TossCardPaymentInfo>() {
             this.flowMode = _flowMode.value
             this.easyPay = _easyPay.value
             this.discountCode = _discountCode.value
+            this.currency = _currency.value
         }
 
     private val _cardCompany = MutableStateFlow<TossCardPaymentCompany?>(null)
@@ -58,6 +60,9 @@ class CardPaymentViewModel : BasePaymentViewModel<TossCardPaymentInfo>() {
 
     private val _easyPay = MutableStateFlow<TossEasyPayCompany?>(null)
     val easyPay = _easyPay.asStateFlow()
+
+    private val _currency = MutableStateFlow<Currency?>(null)
+    val currency = _currency.asStateFlow()
 
     fun setCardCompany(cardCompany: TossCardPaymentCompany?) {
         _cardCompany.value = cardCompany
@@ -93,6 +98,10 @@ class CardPaymentViewModel : BasePaymentViewModel<TossCardPaymentInfo>() {
 
     fun setDiscountCode(discountCode: String?) {
         _discountCode.value = discountCode
+    }
+
+    fun setCurrency(currency: Currency) {
+        _currency.value = currency
     }
 
     override fun requestPayment(
