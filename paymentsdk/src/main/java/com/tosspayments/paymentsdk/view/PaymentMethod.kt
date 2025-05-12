@@ -104,9 +104,11 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         )
     }
 
-    data class PaymentInfo private constructor(
+    class PaymentInfo private constructor(
         builder: Builder
     ) : TossPaymentInfo(builder.orderId, builder.orderName, 0) {
+        val orderId: String
+        val orderName: String
         var taxExemptionAmount: Number = 0
         var useEscrow: Boolean? = null
         var escrowProducts: List<EscrowProduct>? = null
@@ -119,7 +121,10 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
             "해당 방식은 삭제할 예정입니다. Builder 사용해주세요.",
             ReplaceWith("PaymentMethod.PaymentInfo.Builder()")
         )
-        constructor(orderId: String, orderName: String) : this(
+        constructor(
+            orderId: String,
+            orderName: String
+        ) : this(
             Builder()
                 .setOrderId(orderId)
                 .setOrderName(orderName)
@@ -127,6 +132,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
         init {
             orderId = builder.orderId
+            orderName = builder.orderName
             taxExemptionAmount = builder.taxExemptionAmount
             useEscrow = builder.useEscrow
             escrowProducts = builder.escrowProducts
@@ -138,6 +144,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
             customerEmail = builder.customerEmail
             taxFreeAmount = builder.taxFreeAmount
             cultureExpense = builder.cultureExpense
+            useInternationalCardOnly = builder.useInternationalCardOnly
         }
 
         override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
@@ -206,6 +213,8 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
             internal var taxFreeAmount: Number? = null
                 private set
             internal var cultureExpense: Boolean = false
+                private set
+            internal var useInternationalCardOnly: Boolean? = null
                 private set
 
             /**
@@ -346,6 +355,11 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
             fun setCultureExpense(isCultureExpense: Boolean): Builder {
                 this.cultureExpense = isCultureExpense
+                return this
+            }
+
+            fun setUseCardOnly(useCardOnly: Boolean): Builder {
+                this.useInternationalCardOnly = useCardOnly
                 return this
             }
 
