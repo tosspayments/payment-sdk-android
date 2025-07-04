@@ -49,6 +49,9 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .imePadding()
+                .navigationBarsPadding()
                 .background(color = Color.White)
                 .padding(24.dp, 12.dp, 24.dp, 12.dp)
         ) {
