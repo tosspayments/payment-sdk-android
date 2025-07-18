@@ -61,12 +61,20 @@ android {
     }
 }
 
+val isJitpackBuild = System.getenv("JITPACK_VERSION") != null
+
 dependencies {
     add("localImplementation", project(":paymentsdk"))
-    add(
-        "remoteImplementation",
-        "com.github.tosspayments:payment-sdk-android:${project.property("versionName")}"
-    )
+
+    // jitpack 에서 신규 버전 배포 전 빌드 시에는 모든 variant 에 대해 빌드하는데, 이 시점에는 신규 버전이 배포되지 않은 상태이기 때문에 local 로 빌드해 준다.
+    if (isJitpackBuild) {
+        add("implementation", project(":paymentsdk"))
+    } else {
+        add(
+            "remoteImplementation",
+            "com.github.tosspayments:payment-sdk-android:${project.property("versionName")}"
+        )
+    }
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
