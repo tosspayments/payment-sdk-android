@@ -10,10 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 rootProject.name = "TossPaymentSdk"
-include ':app'
-include ':paymentsdk'
+include(":app")
+include(":paymentsdk")

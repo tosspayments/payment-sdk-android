@@ -7,6 +7,8 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -33,6 +35,14 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPaymentWidgetInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val imeBars = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = maxOf(sysBars.bottom, imeBars.bottom)
+            v.setPadding(sysBars.left, sysBars.top, sysBars.right, bottomInset)
+            insets
+        }
 
         initViews()
         bindViewModel()
