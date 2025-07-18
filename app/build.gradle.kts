@@ -37,6 +37,7 @@ android {
             applicationIdSuffix = ".live"
         }
         create("local") {
+            isDefault = true
             dimension = "source"
         }
         create("remote") {
