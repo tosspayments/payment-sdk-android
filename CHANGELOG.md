@@ -1,3 +1,7 @@
+# 0.1.18 (2025.07.18)
+## Fixed
+### Android 35 edge-to-edge 대응
+
 # 0.1.17 (2024.12.19)
 ## Added
 ### Payment SDK 다통화승인(외화결제) 지원
