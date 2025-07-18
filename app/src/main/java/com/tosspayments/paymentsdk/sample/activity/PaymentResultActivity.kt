@@ -55,6 +55,8 @@ class PaymentResultActivity : AppCompatActivity() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .background(Color.White)
                 .padding(24.dp, 12.dp, 24.dp, 12.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)

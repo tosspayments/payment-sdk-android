@@ -3,7 +3,11 @@ package com.tosspayments.paymentsdk.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
@@ -74,7 +78,18 @@ internal class TossPaymentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_tosspayment)
+
+        val rootView = findViewById<View>(R.id.payment_view)
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
+            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val imeBars = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = maxOf(sysBars.bottom, imeBars.bottom)
+
+            v.setPadding(sysBars.left, sysBars.top, sysBars.right, bottomInset)
+            insets
+        }
 
         initViews()
         handleIntent(intent)

@@ -33,52 +33,44 @@
         <activity
             android:name=".activity.CardPaymentActivity"
             android:label="카드결제"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.AccountPaymentActivity"
             android:label="가상계좌"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.TransferPaymentActivity"
             android:label="계좌이체"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.MobilePaymentActivity"
             android:label="휴대폰"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.GiftCertificatePaymentActivity"
             android:label="상품권"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.PaymentResultActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.PaymentWidgetActivity"
-            android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".activity.PaymentWidgetInfoActivity"
-            android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
     </application>
 

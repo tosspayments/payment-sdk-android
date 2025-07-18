@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.sample.R
@@ -143,6 +145,13 @@ class PaymentWidgetActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPaymentWidgetBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val imeBars = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = maxOf(sysBars.bottom, imeBars.bottom)
+            v.setPadding(sysBars.left, sysBars.top, sysBars.right, bottomInset)
+            insets
+        }
 
         intent?.run {
             initPaymentWidget(
