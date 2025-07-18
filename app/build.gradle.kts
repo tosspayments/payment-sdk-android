@@ -61,7 +61,7 @@ android {
     }
 }
 
-val isJitpackBuild = System.getenv("JITPACK_VERSION") != null
+val isJitpackBuild = System.getenv("JITPACK") == "true"
 
 dependencies {
     add("localImplementation", project(":paymentsdk"))
