@@ -23,10 +23,10 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPaymentWidgetInfoBinding
 
     companion object {
-        private const val DEFAULT_CUSTOMER_KEY = "CUSTOMER_KEY"
-        private const val DEFAULT_CLIENT_KEY = "CLIENT_KEY"
-        private const val DEFAULT_ORDER_ID = "ORDER_ID"
-        private const val DEFAULT_ORDER_NAME = "ORDER_NAME"
+        private const val DEFAULT_CUSTOMER_KEY = "@@ANONYMOUS"
+        private const val DEFAULT_CLIENT_KEY = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"
+        private const val DEFAULT_ORDER_ID = "dnA8Bcq46FEpCjg08ZFMf"
+        private const val DEFAULT_ORDER_NAME = "후드티"
         private const val DEFAULT_REDIRECT_URL = ""
         private const val DEFAULT_COUNTRY_CODE = "KR"
     }
