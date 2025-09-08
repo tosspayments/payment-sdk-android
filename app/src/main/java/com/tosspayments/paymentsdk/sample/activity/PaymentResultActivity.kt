@@ -91,7 +91,7 @@ class PaymentResultActivity : AppCompatActivity() {
 
     @Composable
     fun ResultTitle(isSuccess: Boolean) {
-        Title("결제 ${if (isSuccess) "성공" else "실패"}", Modifier.fillMaxWidth())
+        Title("결제인증 ${if (isSuccess) "성공" else "실패"}", Modifier.fillMaxWidth())
     }
 
     @Composable
