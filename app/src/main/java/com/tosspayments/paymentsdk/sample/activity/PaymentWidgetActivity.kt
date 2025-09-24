@@ -50,7 +50,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 Log.d(TAG, "onAgreementStatusChanged : ${agreementStatus.agreedRequiredTerms}")
 
                 runOnUiThread {
-                    binding.requestPaymentCta.isEnabled = agreementStatus.agreedRequiredTerms
+                    binding.hospitalReservationPayButton.isEnabled = agreementStatus.agreedRequiredTerms
                 }
             }
         }
@@ -60,7 +60,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             val message = "PaymentMethods loaded"
 
             Log.d(TAG, message)
-            binding.paymentMethodWidgetStatus.text = message
+            // binding.paymentMethodWidgetStatus.text = message // 해당 뷰가 XML에서 제거됨
         }
 
         override fun onFail(fail: TossPaymentResult.Fail) {
@@ -84,7 +84,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
             val message = "Agreements loaded"
 
             Log.d(TAG, message)
-            binding.agreementWidgetStatus.text = message
+            // binding.agreementWidgetStatus.text = message // 해당 뷰가 XML에서 제거됨
         }
 
         override fun onFail(fail: TossPaymentResult.Fail) {
@@ -198,21 +198,23 @@ class PaymentWidgetActivity : AppCompatActivity() {
             PaymentMethod.Rendering.Options(variantKey = it)
         }
 
+        binding.hospitalReservationPayInformationPaymentMethod
+
         paymentWidget.run {
             renderPaymentMethods(
-                binding.paymentMethodWidget,
+                binding.hospitalReservationPayInformationPaymentMethod,
                 renderingAmount,
                 renderingOptions,
                 paymentMethodWidgetStatusListener
             )
 
-            renderAgreement(binding.agreementWidget, agreementWidgetStatusListener)
+            renderAgreement(binding.hospitalReservationPayInformationPaymentAgreement, agreementWidgetStatusListener)
 
             addPaymentMethodEventListener(paymentEventListener)
             addAgreementStatusListener(agreementStatusListener)
         }
 
-        binding.requestPaymentCta.setOnClickListener {
+        binding.hospitalReservationPayButton .setOnClickListener {
             paymentWidget.requestPayment(
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
                 paymentCallback = object : PaymentCallback {
@@ -228,11 +230,11 @@ class PaymentWidgetActivity : AppCompatActivity() {
             Log.d("selectedPaymentMethod", paymentWidget.getSelectedPaymentMethod().toString())
         }
 
-        binding.changeAmountCta.setOnClickListener {
-            showUpdateAmountDialog { inputAmount ->
-                paymentWidget.updateAmount(inputAmount)
-            }
-        }
+//        binding.changeAmountCta.setOnClickListener {
+//            showUpdateAmountDialog { inputAmount ->
+//                paymentWidget.updateAmount(inputAmount)
+//            }
+//        }
     }
 
     private fun handlePaymentSuccessResult(success: TossPaymentResult.Success) {
