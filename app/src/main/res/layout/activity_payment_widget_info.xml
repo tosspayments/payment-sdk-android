@@ -164,6 +164,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
+
+            <TextView
+                style="@style/Input.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="Metadata"
+                tools:ignore="HardcodedText" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/add_metadata_row"
+                style="@style/Button.Outline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="행 추가"
+                tools:ignore="HardcodedText" />
+
+            <LinearLayout
+                android:id="@+id/metadata_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical" />
         </LinearLayout>
     </ScrollView>
 
