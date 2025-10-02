@@ -214,7 +214,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
 
         binding.requestPaymentCta.setOnClickListener {
             paymentWidget.requestPayment(
-                paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName),
+                paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName).apply {
+                    metadata = mapOf("aaaa" to "1212", "1212" to "2323")
+                },
                 paymentCallback = object : PaymentCallback {
                     override fun onPaymentSuccess(success: TossPaymentResult.Success) {
                         handlePaymentSuccessResult(success)
