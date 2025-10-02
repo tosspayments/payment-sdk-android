@@ -115,6 +115,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         private const val EXTRA_KEY_COUNTRY_CODE = "extraKeyCountryCode"
         private const val EXTRA_KEY_VARIANT_KEY = "extraKeyVariantKey"
         private const val EXTRA_KEY_REDIRECT_URL = "extraKeyRedirectUrl"
+        private const val EXTRA_KEY_METADATA = "extraKeyMetadata"
 
         fun getIntent(
             context: Context,
@@ -126,7 +127,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
             currency: PaymentMethod.Rendering.Currency,
             countryCode: String,
             variantKey: String? = null,
-            redirectUrl: String? = null
+            redirectUrl: String? = null,
+            metadata: HashMap<String, String>? = null
         ): Intent {
             return Intent(context, PaymentWidgetActivity::class.java)
                 .putExtra(EXTRA_KEY_AMOUNT, amount)
@@ -138,6 +140,9 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 .putExtra(EXTRA_KEY_COUNTRY_CODE, countryCode)
                 .putExtra(EXTRA_KEY_VARIANT_KEY, variantKey)
                 .putExtra(EXTRA_KEY_REDIRECT_URL, redirectUrl)
+                .apply {
+                    metadata?.let { putExtra(EXTRA_KEY_METADATA, it) }
+                }
         }
     }
 
@@ -165,7 +170,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 countryCode = getStringExtra(EXTRA_KEY_COUNTRY_CODE)?.takeIf { it.length == 2 }
                     ?: "KR",
                 variantKey = getStringExtra(EXTRA_KEY_VARIANT_KEY),
-                redirectUrl = getStringExtra(EXTRA_KEY_REDIRECT_URL)
+                redirectUrl = getStringExtra(EXTRA_KEY_REDIRECT_URL),
+                metadata = (getSerializableExtra(EXTRA_KEY_METADATA) as? HashMap<String, String>)
             )
         }
     }
@@ -179,7 +185,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
         currency: PaymentMethod.Rendering.Currency,
         countryCode: String,
         variantKey: String?,
-        redirectUrl: String?
+        redirectUrl: String?,
+        metadata: Map<String, String>?
     ) {
         val paymentWidget = PaymentWidget(
             activity = this@PaymentWidgetActivity,
@@ -215,7 +222,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
         binding.requestPaymentCta.setOnClickListener {
             paymentWidget.requestPayment(
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName).apply {
-                    metadata = mapOf("aaaa" to "1212", "1212" to "2323")
+                    val sanitized = metadata?.filter { it.key.isNotBlank() } ?: emptyMap()
+                    this.metadata = if (sanitized.isEmpty()) null else sanitized
                 },
                 paymentCallback = object : PaymentCallback {
                     override fun onPaymentSuccess(success: TossPaymentResult.Success) {
