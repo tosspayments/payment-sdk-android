@@ -33,4 +33,15 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:background">@drawable/selector_edittext</item>
     </style>
+
+    <style name="Button.Outline" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/selector_button_outline</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:minHeight">40dp</item>
+    </style>
 </resources>

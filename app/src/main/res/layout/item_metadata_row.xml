@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="8dp">
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/metadata_key"
+        style="@style/Input.EditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="key"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/metadata_value"
+        style="@style/Input.EditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:hint="value"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/remove_row"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="remove"
+        android:src="@android:drawable/ic_delete"
+        tools:ignore="HardcodedText" />
+
+</LinearLayout>
+
