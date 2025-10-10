@@ -115,6 +115,7 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
         var showCustomerMobilePhone: Boolean = false
         var mobileCarrier: List<TossPaymentMobileCarrier>? = null
         var useInternationalCardOnly: Boolean? = null
+        var metadata: Map<String, String>? = null
 
         override val paymentPayload: JSONObject.(JSONObject) -> JSONObject
             get() = {
@@ -149,6 +150,10 @@ class PaymentMethod(context: Context, attrs: AttributeSet? = null) :
 
                 useInternationalCardOnly?.let {
                     put("useInternationalCardOnly", it)
+                }
+
+                metadata?.let {
+                    put("metadata", JSONObject(it))
                 }
 
                 this

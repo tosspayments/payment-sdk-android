@@ -13,6 +13,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetInfoBinding
+import com.tosspayments.paymentsdk.sample.databinding.ItemMetadataRowBinding
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetInfoViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethod
 import kotlinx.coroutines.launch
@@ -123,6 +124,13 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
             setText(DEFAULT_REDIRECT_URL)
         }
+
+        binding.addMetadataRow.setOnClickListener {
+            addMetadataRow()
+        }
+
+        // 기본으로 한 줄 추가
+        addMetadataRow()
     }
 
     private fun bindViewModel() {
@@ -138,6 +146,8 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                     is PaymentWidgetInfoViewModel.UiState.Valid -> {
                         Pair(true, object : View.OnClickListener {
                             override fun onClick(v: View?) {
+                                val metadata = collectMetadataFromRows()
+
                                 startActivity(
                                     PaymentWidgetActivity.getIntent(
                                         this@PaymentWidgetInfoActivity,
@@ -150,7 +160,8 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                                             ?: PaymentMethod.Rendering.Currency.KRW,
                                         countryCode = viewModel.countryCode,
                                         variantKey = viewModel.variantKey,
-                                        redirectUrl = uiState.redirectUrl
+                                        redirectUrl = uiState.redirectUrl,
+                                        metadata = metadata
                                     )
                                 )
                             }
@@ -168,6 +179,31 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
         viewModel.currency.observe(this@PaymentWidgetInfoActivity) {
             binding.paymentCurrency.text = it.name
         }
+    }
+
+    private fun addMetadataRow(key: String? = null, value: String? = null) {
+        val rowBinding = ItemMetadataRowBinding.inflate(layoutInflater, binding.metadataContainer, false)
+        rowBinding.metadataKey.setText(key.orEmpty())
+        rowBinding.metadataValue.setText(value.orEmpty())
+        rowBinding.removeRow.setOnClickListener {
+            binding.metadataContainer.removeView(rowBinding.root)
+        }
+        binding.metadataContainer.addView(rowBinding.root)
+    }
+
+    private fun collectMetadataFromRows(): java.util.HashMap<String, String>? {
+        val result = linkedMapOf<String, String>()
+        val parent = binding.metadataContainer
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            val rowBinding = ItemMetadataRowBinding.bind(child)
+            val key = rowBinding.metadataKey.text?.toString()?.trim().orEmpty()
+            val value = rowBinding.metadataValue.text?.toString()?.trim().orEmpty()
+            if (key.isNotEmpty()) {
+                result[key] = value
+            }
+        }
+        return if (result.isEmpty()) null else java.util.HashMap(result)
     }
 
     class CurrencyDialogFragment(
