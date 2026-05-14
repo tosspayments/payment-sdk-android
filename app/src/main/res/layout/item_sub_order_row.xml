@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_merchant_business_number"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="merchantBusinessNumber"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_merchant_name"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="merchantName"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_country"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="country"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_postal_code"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="postalCode"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_address"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="address"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_detail_address"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="detailAddress"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/sub_order_order_name"
+        style="@style/Input.EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="orderName"
+        android:inputType="text"
+        tools:ignore="HardcodedText" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/remove_sub_order_row"
+        style="@style/Button.Outline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="SubOrder 삭제"
+        tools:ignore="HardcodedText" />
+</LinearLayout>

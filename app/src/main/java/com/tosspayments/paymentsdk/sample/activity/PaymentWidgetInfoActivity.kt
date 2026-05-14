@@ -12,8 +12,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.tosspayments.paymentsdk.model.paymentinfo.MerchantAddress
+import com.tosspayments.paymentsdk.model.paymentinfo.SubOrder
 import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetInfoBinding
 import com.tosspayments.paymentsdk.sample.databinding.ItemMetadataRowBinding
+import com.tosspayments.paymentsdk.sample.databinding.ItemSubOrderRowBinding
 import com.tosspayments.paymentsdk.sample.viewmodel.PaymentWidgetInfoViewModel
 import com.tosspayments.paymentsdk.view.PaymentMethod
 import kotlinx.coroutines.launch
@@ -131,6 +134,12 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
 
         // 기본으로 한 줄 추가
         addMetadataRow()
+
+        binding.addSubOrderRow.setOnClickListener {
+            addSubOrderRow()
+        }
+
+        addSubOrderRow()
     }
 
     private fun bindViewModel() {
@@ -147,6 +156,7 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                         Pair(true, object : View.OnClickListener {
                             override fun onClick(v: View?) {
                                 val metadata = collectMetadataFromRows()
+                                val subOrders = collectSubOrdersFromRows()
 
                                 startActivity(
                                     PaymentWidgetActivity.getIntent(
@@ -161,7 +171,8 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
                                         countryCode = viewModel.countryCode,
                                         variantKey = viewModel.variantKey,
                                         redirectUrl = uiState.redirectUrl,
-                                        metadata = metadata
+                                        metadata = metadata,
+                                        subOrders = subOrders
                                     )
                                 )
                             }
@@ -191,6 +202,14 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
         binding.metadataContainer.addView(rowBinding.root)
     }
 
+    private fun addSubOrderRow() {
+        val rowBinding = ItemSubOrderRowBinding.inflate(layoutInflater, binding.subOrderContainer, false)
+        rowBinding.removeSubOrderRow.setOnClickListener {
+            binding.subOrderContainer.removeView(rowBinding.root)
+        }
+        binding.subOrderContainer.addView(rowBinding.root)
+    }
+
     private fun collectMetadataFromRows(): java.util.HashMap<String, String>? {
         val result = linkedMapOf<String, String>()
         val parent = binding.metadataContainer
@@ -204,6 +223,47 @@ class PaymentWidgetInfoActivity : AppCompatActivity() {
             }
         }
         return if (result.isEmpty()) null else java.util.HashMap(result)
+    }
+
+    private fun collectSubOrdersFromRows(): ArrayList<SubOrder>? {
+        val result = arrayListOf<SubOrder>()
+        val parent = binding.subOrderContainer
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            val rowBinding = ItemSubOrderRowBinding.bind(child)
+            val merchantBusinessNumber =
+                rowBinding.subOrderMerchantBusinessNumber.text?.toString()?.trim().orEmpty()
+            val merchantName = rowBinding.subOrderMerchantName.text?.toString()?.trim().orEmpty()
+            val country = rowBinding.subOrderCountry.text?.toString()?.trim().orEmpty()
+            val postalCode = rowBinding.subOrderPostalCode.text?.toString()?.trim().orEmpty()
+            val address = rowBinding.subOrderAddress.text?.toString()?.trim().orEmpty()
+            val detailAddress = rowBinding.subOrderDetailAddress.text?.toString()?.trim().orEmpty()
+            val orderName = rowBinding.subOrderOrderName.text?.toString()?.trim().orEmpty()
+
+            val hasRequiredValues = merchantBusinessNumber.isNotBlank() &&
+                merchantName.isNotBlank() &&
+                country.isNotBlank() &&
+                postalCode.isNotBlank() &&
+                address.isNotBlank() &&
+                orderName.isNotBlank()
+
+            if (hasRequiredValues) {
+                result.add(
+                    SubOrder(
+                        merchantBusinessNumber = merchantBusinessNumber,
+                        merchantName = merchantName,
+                        merchantAddress = MerchantAddress(
+                            country = country,
+                            postalCode = postalCode,
+                            address = address,
+                            detailAddress = detailAddress.takeIf { it.isNotBlank() }
+                        ),
+                        orderName = orderName
+                    )
+                )
+            }
+        }
+        return if (result.isEmpty()) null else result
     }
 
     class CurrencyDialogFragment(
