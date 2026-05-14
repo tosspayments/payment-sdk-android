@@ -30,6 +30,7 @@ class AccountPaymentViewModel : BasePaymentViewModel<TossAccountPaymentInfo>() {
             this.customerName = _customerName.value
             this.customerEmail = _customerEmail.value
             this.taxFreeAmount = _taxFreeAmount.value
+            this.subOrders = normalizedSubOrders()
 
             this.validHours = _validHours.value
             this.customerMobilePhone = _customerMobilePhone.value

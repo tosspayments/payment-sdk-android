@@ -21,6 +21,7 @@ class TransferPaymentViewModel : BasePaymentViewModel<TossTransferPaymentInfo>()
             this.customerName = _customerName.value
             this.customerEmail = _customerEmail.value
             this.taxFreeAmount = _taxFreeAmount.value
+            this.subOrders = normalizedSubOrders()
 
             this.cashReceipt = _cashReceipt.value?.value
         }

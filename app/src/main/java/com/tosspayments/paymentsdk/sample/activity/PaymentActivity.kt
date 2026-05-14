@@ -18,8 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.tosspayments.paymentsdk.TossPayments
 import com.tosspayments.paymentsdk.sample.viewmodel.BasePaymentViewModel
 import com.tosspayments.paymentsdk.model.TossPaymentResult
+import com.tosspayments.paymentsdk.model.paymentinfo.SubOrder
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.sample.composable.CtaButton
+import com.tosspayments.paymentsdk.sample.composable.Label
+import com.tosspayments.paymentsdk.sample.composable.OutlineButton
 import com.tosspayments.paymentsdk.sample.composable.PaymentInfoInput
 import com.tosspayments.paymentsdk.sample.model.PaymentUiState
 
@@ -84,6 +87,7 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
             CustomerName()
             CustomerEmail()
             TaxFreeAmount()
+            SubOrders()
         }
     }
 
@@ -161,6 +165,117 @@ abstract class PaymentActivity<K : TossPaymentInfo> : AppCompatActivity() {
             keyboardType = KeyboardType.Email
         ) {
             viewModel.setTaxFreeAmount(it)
+        }
+    }
+
+    @Composable
+    private fun SubOrders() {
+        val subOrders = viewModel.subOrders.collectAsState().value
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Label("SubOrders")
+
+            subOrders.forEachIndexed { index, subOrder ->
+                SubOrderInput(index, subOrder)
+            }
+
+            OutlineButton(
+                text = "SubOrder 추가",
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                viewModel.addSubOrder()
+            }
+        }
+    }
+
+    @Composable
+    private fun SubOrderInput(index: Int, subOrder: SubOrder) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Label("SubOrder ${index + 1}")
+
+            PaymentInfoInput(
+                labelText = "사업자등록번호",
+                initInputText = subOrder.merchantBusinessNumber
+            ) {
+                viewModel.updateSubOrder(index, subOrder.copy(merchantBusinessNumber = it))
+            }
+
+            PaymentInfoInput(
+                labelText = "상점명",
+                initInputText = subOrder.merchantName
+            ) {
+                viewModel.updateSubOrder(index, subOrder.copy(merchantName = it))
+            }
+
+            PaymentInfoInput(
+                labelText = "국가 코드",
+                initInputText = subOrder.merchantAddress.country
+            ) {
+                viewModel.updateSubOrder(
+                    index,
+                    subOrder.copy(
+                        merchantAddress = subOrder.merchantAddress.copy(country = it)
+                    )
+                )
+            }
+
+            PaymentInfoInput(
+                labelText = "우편번호",
+                initInputText = subOrder.merchantAddress.postalCode
+            ) {
+                viewModel.updateSubOrder(
+                    index,
+                    subOrder.copy(
+                        merchantAddress = subOrder.merchantAddress.copy(postalCode = it)
+                    )
+                )
+            }
+
+            PaymentInfoInput(
+                labelText = "주소",
+                initInputText = subOrder.merchantAddress.address
+            ) {
+                viewModel.updateSubOrder(
+                    index,
+                    subOrder.copy(
+                        merchantAddress = subOrder.merchantAddress.copy(address = it)
+                    )
+                )
+            }
+
+            PaymentInfoInput(
+                labelText = "상세주소",
+                initInputText = subOrder.merchantAddress.detailAddress.orEmpty()
+            ) {
+                viewModel.updateSubOrder(
+                    index,
+                    subOrder.copy(
+                        merchantAddress = subOrder.merchantAddress.copy(
+                            detailAddress = it.takeIf { detailAddress -> detailAddress.isNotBlank() }
+                        )
+                    )
+                )
+            }
+
+            PaymentInfoInput(
+                labelText = "하위 주문명",
+                initInputText = subOrder.orderName
+            ) {
+                viewModel.updateSubOrder(index, subOrder.copy(orderName = it))
+            }
+
+            OutlineButton(
+                text = "SubOrder 삭제",
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                viewModel.removeSubOrder(index)
+            }
         }
     }
 
