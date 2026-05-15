@@ -70,6 +70,52 @@ dependencies {
 
 ## 시작하기
 
+### 결제 파라미터
+
+결제창과 결제위젯의 결제 요청에서 `subOrders` 파라미터를 사용할 수 있습니다.
+
+```kotlin
+val subOrders = listOf(
+    SubOrder(
+        merchantBusinessNumber = "1234567890",
+        merchantName = "테스트상점",
+        merchantAddress = MerchantAddress(
+            country = "KR",
+            postalCode = "06236",
+            address = "서울특별시 강남구 테헤란로 123",
+            detailAddress = "101호"
+        ),
+        orderName = "하위 주문명"
+    )
+)
+```
+
+결제창에서는 결제수단별 `TossPaymentInfo`에 값을 설정하세요.
+
+```kotlin
+val paymentInfo = TossCardPaymentInfo(
+    orderId = "order-id",
+    orderName = "주문명",
+    amount = 15000L
+).apply {
+    this.subOrders = subOrders
+}
+```
+
+결제위젯에서는 `PaymentMethod.PaymentInfo`에 값을 설정하세요.
+
+```kotlin
+paymentWidget.requestPayment(
+    paymentInfo = PaymentMethod.PaymentInfo(
+        orderId = "order-id",
+        orderName = "주문명"
+    ).apply {
+        this.subOrders = subOrders
+    },
+    paymentCallback = paymentCallback
+)
+```
+
 ### 연동 가이드
 
 * [결제창 연동하기](https://docs.tosspayments.com/guides/payment/integration): 결제창에서 고객이 결제수단을 선택하고, 결제 정보를 입력해서 결제를 완료합니다. 
