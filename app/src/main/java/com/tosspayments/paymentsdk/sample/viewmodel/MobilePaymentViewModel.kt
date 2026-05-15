@@ -35,6 +35,7 @@ class MobilePaymentViewModel : BasePaymentViewModel<TossMobilePaymentInfo>() {
             this.customerName = _customerName.value
             this.customerEmail = _customerEmail.value
             this.taxFreeAmount = _taxFreeAmount.value
+            this.subOrders = normalizedSubOrders()
             this.mobileCarrierList = _mobileCarrier.value
         }
 
