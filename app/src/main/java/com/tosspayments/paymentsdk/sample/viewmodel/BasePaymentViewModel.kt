@@ -6,6 +6,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tosspayments.paymentsdk.TossPayments
+import com.tosspayments.paymentsdk.model.paymentinfo.MerchantAddress
+import com.tosspayments.paymentsdk.model.paymentinfo.SubOrder
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.sample.model.PaymentUiState
 import kotlinx.coroutines.flow.*
@@ -44,6 +46,9 @@ abstract class BasePaymentViewModel<T : TossPaymentInfo> : ViewModel() {
     protected val _taxFreeAmount = MutableStateFlow(0L)
     val taxFreeAmount = _taxFreeAmount.asStateFlow()
 
+    protected val _subOrders = MutableStateFlow<List<SubOrder>>(emptyList())
+    val subOrders = _subOrders.asStateFlow()
+
     val uiState =
         combine(_orderId, _orderName, _amount) { orderId, orderName, amount ->
             return@combine if (orderId.isNotBlank() && orderName.isNotBlank() && amount > 0) PaymentUiState.Ready else PaymentUiState.Edit
@@ -75,6 +80,49 @@ abstract class BasePaymentViewModel<T : TossPaymentInfo> : ViewModel() {
 
     fun setTaxFreeAmount(taxFreeAmount: String?) {
         _taxFreeAmount.value = if (taxFreeAmount.isNullOrBlank()) 0L else taxFreeAmount.toLong()
+    }
+
+    fun addSubOrder() {
+        _subOrders.value = _subOrders.value + emptySubOrder()
+    }
+
+    fun updateSubOrder(index: Int, subOrder: SubOrder) {
+        _subOrders.value = _subOrders.value.mapIndexed { currentIndex, currentSubOrder ->
+            if (currentIndex == index) subOrder else currentSubOrder
+        }
+    }
+
+    fun removeSubOrder(index: Int) {
+        _subOrders.value = _subOrders.value.filterIndexed { currentIndex, _ ->
+            currentIndex != index
+        }
+    }
+
+    protected fun normalizedSubOrders(): List<SubOrder>? {
+        return _subOrders.value.filter { it.isComplete() }.takeIf { it.isNotEmpty() }
+    }
+
+    private fun emptySubOrder(): SubOrder {
+        return SubOrder(
+            merchantBusinessNumber = "",
+            merchantName = "",
+            merchantAddress = MerchantAddress(
+                country = "",
+                postalCode = "",
+                address = "",
+                detailAddress = null
+            ),
+            orderName = ""
+        )
+    }
+
+    private fun SubOrder.isComplete(): Boolean {
+        return merchantBusinessNumber.isNotBlank() &&
+            merchantName.isNotBlank() &&
+            merchantAddress.country.isNotBlank() &&
+            merchantAddress.postalCode.isNotBlank() &&
+            merchantAddress.address.isNotBlank() &&
+            orderName.isNotBlank()
     }
 
     abstract fun requestPayment(activity: Activity, resultLauncher: ActivityResultLauncher<Intent>)

@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.tosspayments.paymentsdk.PaymentWidget
 import com.tosspayments.paymentsdk.model.*
+import com.tosspayments.paymentsdk.model.paymentinfo.SubOrder
 import com.tosspayments.paymentsdk.sample.R
 import com.tosspayments.paymentsdk.sample.databinding.ActivityPaymentWidgetBinding
 import com.tosspayments.paymentsdk.sample.extension.toast
@@ -116,6 +117,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
         private const val EXTRA_KEY_VARIANT_KEY = "extraKeyVariantKey"
         private const val EXTRA_KEY_REDIRECT_URL = "extraKeyRedirectUrl"
         private const val EXTRA_KEY_METADATA = "extraKeyMetadata"
+        private const val EXTRA_KEY_SUB_ORDERS = "extraKeySubOrders"
 
         fun getIntent(
             context: Context,
@@ -128,7 +130,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
             countryCode: String,
             variantKey: String? = null,
             redirectUrl: String? = null,
-            metadata: HashMap<String, String>? = null
+            metadata: HashMap<String, String>? = null,
+            subOrders: ArrayList<SubOrder>? = null
         ): Intent {
             return Intent(context, PaymentWidgetActivity::class.java)
                 .putExtra(EXTRA_KEY_AMOUNT, amount)
@@ -142,6 +145,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 .putExtra(EXTRA_KEY_REDIRECT_URL, redirectUrl)
                 .apply {
                     metadata?.let { putExtra(EXTRA_KEY_METADATA, it) }
+                    subOrders?.let { putParcelableArrayListExtra(EXTRA_KEY_SUB_ORDERS, it) }
                 }
         }
     }
@@ -171,7 +175,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
                     ?: "KR",
                 variantKey = getStringExtra(EXTRA_KEY_VARIANT_KEY),
                 redirectUrl = getStringExtra(EXTRA_KEY_REDIRECT_URL),
-                metadata = (getSerializableExtra(EXTRA_KEY_METADATA) as? HashMap<String, String>)
+                metadata = (getSerializableExtra(EXTRA_KEY_METADATA) as? HashMap<String, String>),
+                subOrders = getParcelableArrayListExtra(EXTRA_KEY_SUB_ORDERS)
             )
         }
     }
@@ -186,7 +191,8 @@ class PaymentWidgetActivity : AppCompatActivity() {
         countryCode: String,
         variantKey: String?,
         redirectUrl: String?,
-        metadata: Map<String, String>?
+        metadata: Map<String, String>?,
+        subOrders: List<SubOrder>?
     ) {
         val paymentWidget = PaymentWidget(
             activity = this@PaymentWidgetActivity,
@@ -224,6 +230,7 @@ class PaymentWidgetActivity : AppCompatActivity() {
                 paymentInfo = PaymentMethod.PaymentInfo(orderId = orderId, orderName = orderName).apply {
                     val sanitized = metadata?.filter { it.key.isNotBlank() } ?: emptyMap()
                     this.metadata = if (sanitized.isEmpty()) null else sanitized
+                    this.subOrders = subOrders?.takeIf { it.isNotEmpty() }
                 },
                 paymentCallback = object : PaymentCallback {
                     override fun onPaymentSuccess(success: TossPaymentResult.Success) {

@@ -21,6 +21,7 @@ class CardPaymentViewModel : BasePaymentViewModel<TossCardPaymentInfo>() {
             this.customerName = _customerName.value
             this.customerEmail = _customerEmail.value
             this.taxFreeAmount = _taxFreeAmount.value
+            this.subOrders = normalizedSubOrders()
 
             this.cardCompany = _cardCompany.value
             this.cardInstallmentPlan = _installmentPlan.value
