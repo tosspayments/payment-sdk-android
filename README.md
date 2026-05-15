@@ -72,7 +72,7 @@ dependencies {
 
 ### 결제 파라미터
 
-결제창과 결제위젯의 결제 요청에서 `subOrders` 파라미터를 사용할 수 있습니다.
+결제위젯의 결제 요청에서 `subOrders` 파라미터를 사용할 수 있습니다.
 
 ```kotlin
 val subOrders = listOf(
@@ -90,19 +90,7 @@ val subOrders = listOf(
 )
 ```
 
-결제창에서는 결제수단별 `TossPaymentInfo`에 값을 설정하세요.
-
-```kotlin
-val paymentInfo = TossCardPaymentInfo(
-    orderId = "order-id",
-    orderName = "주문명",
-    amount = 15000L
-).apply {
-    this.subOrders = subOrders
-}
-```
-
-결제위젯에서는 `PaymentMethod.PaymentInfo`에 값을 설정하세요.
+`PaymentMethod.PaymentInfo`에 값을 설정하세요.
 
 ```kotlin
 paymentWidget.requestPayment(
