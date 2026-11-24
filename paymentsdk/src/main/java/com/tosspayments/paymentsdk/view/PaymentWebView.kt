@@ -22,7 +22,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.security.SecureRandom
 import kotlin.math.roundToInt
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -101,13 +100,16 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
-                if (request?.isForMainFrame == true && request.url.toString() == htmlFileUrl) {
-                    return htmlResponse(bridge.addScript(readAsset(htmlFileName)))
-                }
+                val url = request?.url ?: return super.shouldInterceptRequest(view, request)
+                val document = bridge.scriptedDocument(
+                    htmlFileUrl,
+                    url.toString(),
+                    request.isForMainFrame
+                ) { readAsset(htmlFileName) }
 
-                return request?.url?.let {
-                    assetLoader.shouldInterceptRequest(it)
-                } ?: super.shouldInterceptRequest(view, request)
+                return document?.let { htmlResponse(it) }
+                    ?: assetLoader.shouldInterceptRequest(url)
+                    ?: super.shouldInterceptRequest(view, request)
             }
 
             override fun shouldOverrideUrlLoading(
@@ -167,13 +169,8 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     }
 
     private fun openBridge(baseUrl: String): PaymentBridge {
-        return PaymentBridge(newToken(), Uri.parse(baseUrl).toBridgeOrigin(), bridgeObjects)
+        return PaymentBridge.open(Uri.parse(baseUrl).toBridgeOrigin(), bridgeObjects)
             .also { bridge = it }
-    }
-
-    private fun newToken(): String {
-        return ByteArray(32).also { SecureRandom().nextBytes(it) }
-            .joinToString("") { "%02x".format(it) }
     }
 
     private fun readAsset(fileName: String): String {

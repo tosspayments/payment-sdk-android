@@ -13,6 +13,7 @@ import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
 import com.tosspayments.paymentsdk.interfaces.BridgeObject
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
+import com.tosspayments.paymentsdk.interfaces.errorBridgeMethod
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMethod
@@ -136,15 +137,7 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
                 bridgeObjects = listOf(
                     BridgeObject(
                         PaymentWebView.INTERFACE_NAME_PAYMENT,
-                        mapOf("error" to { arguments ->
-                            callback?.onFailed(
-                                TossPaymentResult.Fail(
-                                    errorCode = arguments[0]!!,
-                                    errorMessage = arguments[1]!!,
-                                    orderId = arguments[2]
-                                )
-                            )
-                        })
+                        mapOf(errorBridgeMethod { callback?.onFailed(it) })
                     )
                 )
 

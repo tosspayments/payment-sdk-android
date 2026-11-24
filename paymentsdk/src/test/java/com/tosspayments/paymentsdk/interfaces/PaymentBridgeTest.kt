@@ -1,7 +1,9 @@
 package com.tosspayments.paymentsdk.interfaces
 
+import org.json.JSONException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,8 +41,12 @@ class PaymentBridgeTest {
     @Test
     fun `each object receives only its own methods`() {
         receive(TOKEN, loadedOrigin, "TossPayment", "success", """["done"]""")
-        receive(TOKEN, loadedOrigin, "TossPayment", "message", """["{}"]""")
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "success", """["done"]""")
+        assertThrows(NoSuchElementException::class.java) {
+            receive(TOKEN, loadedOrigin, "TossPayment", "message", """["{}"]""")
+        }
+        assertThrows(NoSuchElementException::class.java) {
+            receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "success", """["done"]""")
+        }
 
         assertEquals(listOf("payment.success" to listOf<String?>("done")), calls)
     }
@@ -63,6 +69,22 @@ class PaymentBridgeTest {
             ),
             calls
         )
+    }
+
+    @Test
+    fun `iframe on another origin`() {
+        receive(null, loadedOrigin, "PaymentWidgetAndroidSDK", "message", """["{}"]""")
+        receive("guess", loadedOrigin, "PaymentWidgetAndroidSDK", "message", """["{}"]""")
+
+        assertTrue(calls.isEmpty())
+    }
+
+    @Test
+    fun `iframe on the same origin is told apart only by the token`() {
+        receive(null, loadedOrigin, "PaymentWidgetAndroidSDK", "message", """["without"]""")
+        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", """["through the parent"]""")
+
+        assertEquals(listOf("widget.message" to listOf<String?>("through the parent")), calls)
     }
 
     @Test
@@ -138,20 +160,32 @@ class PaymentBridgeTest {
     }
 
     @Test
-    fun `call to an unknown object or method is dropped`() {
-        receive(TOKEN, loadedOrigin, "Unknown", "message", """["{}"]""")
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "unknown", """["{}"]""")
-        receive(TOKEN, loadedOrigin, null, null, """["{}"]""")
-
+    fun `call with the token to an unknown object or method fails`() {
+        assertThrows(NoSuchElementException::class.java) {
+            receive(TOKEN, loadedOrigin, "Unknown", "message", """["{}"]""")
+        }
+        assertThrows(NoSuchElementException::class.java) {
+            receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "unknown", """["{}"]""")
+        }
+        assertThrows(NoSuchElementException::class.java) {
+            receive(TOKEN, loadedOrigin, null, null, """["{}"]""")
+        }
         assertTrue(calls.isEmpty())
     }
 
     @Test
-    fun `call whose arguments are not a list is dropped`() {
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", null)
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", "")
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", "undefined")
-        receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", """{"0":"{}"}""")
+    fun `call with the token whose arguments are not a list fails`() {
+        listOf(null, "", "undefined", """{"0":"{}"}""").forEach { arguments ->
+            assertThrows(JSONException::class.java) {
+                receive(TOKEN, loadedOrigin, "PaymentWidgetAndroidSDK", "message", arguments)
+            }
+        }
+        assertTrue(calls.isEmpty())
+    }
+
+    @Test
+    fun `call without the token is dropped quietly whatever it carries`() {
+        receive("guess", loadedOrigin, "Unknown", "unknown", "undefined")
 
         assertTrue(calls.isEmpty())
     }
@@ -164,18 +198,24 @@ class PaymentBridgeTest {
     }
 
     @Test
-    fun `script defines each object with its own methods`() {
-        val html = bridge.addScript("<html><head></head></html>")
+    fun `main frame request for the document gets the script`() {
+        val html = bridge.scriptedDocument(DOCUMENT_URL, DOCUMENT_URL, true) { "<html></html>" }
 
-        assertTrue(html.contains("""expose("PaymentWidgetAndroidSDK", ["message","error","requestPayments"]);"""))
-        assertTrue(html.contains("""expose("TossPayment", ["success"]);"""))
+        assertTrue(html!!.startsWith("<script>"))
+        assertTrue(html.endsWith("</script><html></html>"))
     }
 
     @Test
-    fun `script carries the token of its own load`() {
-        val html = bridge.addScript("<html></html>")
+    fun `request for the document from a frame inside it gets no script`() {
+        assertNull(bridge.scriptedDocument(DOCUMENT_URL, DOCUMENT_URL, false) { "<html></html>" })
+    }
 
-        assertTrue(html.contains("""var token = "$TOKEN";"""))
+    @Test
+    fun `request for another address gets no script`() {
+        val other = "https://appassets.androidplatform.net/assets/other.html"
+
+        assertNull(bridge.scriptedDocument(DOCUMENT_URL, other, true) { "<html></html>" })
+        assertNull(bridge.scriptedDocument(DOCUMENT_URL, "$DOCUMENT_URL?x=1", true) { "<html></html>" })
     }
 
     @Test
@@ -271,5 +311,6 @@ class PaymentBridgeTest {
 
     private companion object {
         const val TOKEN = "3f9a1c0b7d2e4f60819a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f70"
+        const val DOCUMENT_URL = "https://appassets.androidplatform.net/assets/tosspayment_widget.html"
     }
 }

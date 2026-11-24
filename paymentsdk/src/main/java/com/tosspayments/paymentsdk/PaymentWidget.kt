@@ -9,6 +9,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.errorBridgeMethod
+import com.tosspayments.paymentsdk.interfaces.textBridgeMethod
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
@@ -89,23 +91,19 @@ class PaymentWidget(
     private val methodWidgetBridgeMethods: Map<String, (List<String?>) -> Unit>
         get() = mapOf(
             messageBridgeMethod(methodWidget),
-            "requestPayments" to { arguments ->
+            textBridgeMethod("requestPayments") { html ->
                 methodWidget?.let {
-                    handlePaymentDom(it.context, it.orderId, arguments[0]!!)
+                    handlePaymentDom(it.context, it.orderId, html)
                 }
             },
-            "requestHTML" to { arguments ->
+            textBridgeMethod("requestHTML") { html ->
                 methodWidget?.context?.let {
                     htmlRequestActivityResult.launch(
-                        TossPaymentsWebActivity.getIntent(it, domain, arguments[0]!!)
+                        TossPaymentsWebActivity.getIntent(it, domain, html)
                     )
                 }
             },
-            "error" to { arguments ->
-                methodWidget?.onFail(
-                    TossPaymentResult.Fail(arguments[0]!!, arguments[1]!!, arguments[2])
-                )
-            }
+            errorBridgeMethod { methodWidget?.onFail(it) }
         )
 
     private var methodWidget: PaymentMethod? = null
@@ -114,14 +112,6 @@ class PaymentWidget(
     private var paymentMethodEventListener: PaymentMethodEventListener? = null
     private var agreementStatusListener: AgreementStatusListener? = null
     private var paymentCallback: PaymentCallback? = null
-
-    private fun messageBridgeMethod(
-        widget: PaymentWidgetContainer?
-    ): Pair<String, (List<String?>) -> Unit> {
-        val widgetInterface = PaymentWidgetJavascriptInterface(widget, messageEventHandler)
-
-        return "message" to { arguments -> widgetInterface.message(arguments[0]!!) }
-    }
 
     private fun handlePaymentDom(context: Context, orderId: String, paymentHtml: String) {
         if (paymentHtml.isNotBlank()) {
@@ -318,5 +308,14 @@ class PaymentWidget(
         customerEmail: String? = null,
         customerName: String? = null
     ) {
+    }
+
+    private fun messageBridgeMethod(
+        widget: PaymentWidgetContainer?
+    ): Pair<String, (List<String?>) -> Unit> {
+        return textBridgeMethod(
+            "message",
+            PaymentWidgetJavascriptInterface(widget, messageEventHandler)::message
+        )
     }
 }

@@ -3,6 +3,7 @@ package com.tosspayments.paymentsdk.interfaces
 import org.json.JSONArray
 import org.json.JSONObject
 import java.security.MessageDigest
+import java.security.SecureRandom
 
 internal class BridgeObject(
     val name: String,
@@ -14,6 +15,15 @@ internal class PaymentBridge(
     private val allowedOrigin: BridgeOrigin,
     private val objects: List<BridgeObject>
 ) {
+    fun scriptedDocument(
+        documentUrl: String,
+        requestUrl: String,
+        forMainFrame: Boolean,
+        html: () -> String
+    ): String? {
+        return if (forMainFrame && requestUrl == documentUrl) addScript(html()) else null
+    }
+
     fun addScript(html: String): String {
         if (objects.isEmpty()) {
             return html
@@ -37,12 +47,12 @@ internal class PaymentBridge(
 
         val origin = mainFrameOrigin()
 
-        if (origin != null && !allowedOrigin.allowsMessage(fromMainFrame = true, origin = origin)) {
+        if (origin != null && !allowedOrigin.allowsMessageFrom(origin)) {
             return
         }
 
-        val handler = objects.firstOrNull { it.name == target }?.methods?.get(method) ?: return
-        val values = runCatching { JSONArray(arguments.orEmpty()) }.getOrNull() ?: return
+        val handler = objects.first { it.name == target }.methods.getValue(method.orEmpty())
+        val values = JSONArray(arguments.orEmpty())
 
         handler((0 until values.length()).map {
             if (values.isNull(it)) null else values.optString(it)
@@ -86,6 +96,13 @@ internal class PaymentBridge(
 
     companion object {
         const val ENTRY_NAME = "__tossPaymentsBridge"
+
+        fun open(allowedOrigin: BridgeOrigin, objects: List<BridgeObject>): PaymentBridge {
+            val token = ByteArray(32).also { SecureRandom().nextBytes(it) }
+                .joinToString("") { "%02x".format(it) }
+
+            return PaymentBridge(token, allowedOrigin, objects)
+        }
 
         private val LEADING_DOCTYPE =
             Regex("^\\uFEFF?(\\s*<!DOCTYPE[^>]*>)?", RegexOption.IGNORE_CASE)

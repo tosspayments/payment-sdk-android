@@ -11,6 +11,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.interfaces.BridgeObject
+import com.tosspayments.paymentsdk.interfaces.textBridgeMethod
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
@@ -47,9 +48,7 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun initViews() {
         webView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-            val methods = mapOf<String, (List<String?>) -> Unit>(
-                "success" to { arguments -> handleSuccessResponse(arguments[0]!!) }
-            )
+            val methods = mapOf(textBridgeMethod("success") { handleSuccessResponse(it) })
 
             bridgeObjects = listOf(
                 BridgeObject(PaymentWidgetContainer.INTERFACE_NAME_WIDGET, methods),

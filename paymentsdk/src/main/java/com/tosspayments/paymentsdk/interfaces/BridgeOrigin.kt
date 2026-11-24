@@ -8,9 +8,8 @@ internal class BridgeOrigin(scheme: String?, host: String?, port: Int) {
     private val isOpaque: Boolean
         get() = host.isEmpty() || (scheme != "https" && scheme != "http")
 
-    fun allowsMessage(fromMainFrame: Boolean, origin: BridgeOrigin): Boolean {
-        return fromMainFrame && !isOpaque &&
-                scheme == origin.scheme && host == origin.host && port == origin.port
+    fun allowsMessageFrom(origin: BridgeOrigin): Boolean {
+        return !isOpaque && scheme == origin.scheme && host == origin.host && port == origin.port
     }
 
     companion object {
