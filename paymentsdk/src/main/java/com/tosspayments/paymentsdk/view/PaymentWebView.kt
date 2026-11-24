@@ -3,19 +3,26 @@ package com.tosspayments.paymentsdk.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
-import android.util.Base64
 import android.util.DisplayMetrics
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
+import com.tosspayments.paymentsdk.interfaces.BridgeObject
+import com.tosspayments.paymentsdk.interfaces.BridgeOrigin
+import com.tosspayments.paymentsdk.interfaces.MainThreadReader
+import com.tosspayments.paymentsdk.interfaces.PaymentBridge
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.security.SecureRandom
 import kotlin.math.roundToInt
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -24,8 +31,20 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
 
     companion object {
         const val INTERFACE_NAME_PAYMENT = "TossPayment"
+
+        private const val DEFAULT_BASE_URL = "https://appassets.androidplatform.net"
+        private const val MAIN_FRAME_ORIGIN_TIMEOUT_MILLIS = 5000L
     }
     var setHeightPx: Float? = null
+
+    internal var bridgeObjects: List<BridgeObject> = emptyList()
+
+    @Volatile
+    private var bridge: PaymentBridge? = null
+
+    private val mainThread = MainThreadReader(MAIN_FRAME_ORIGIN_TIMEOUT_MILLIS) {
+        Handler(Looper.getMainLooper()).post(it)
+    }
 
     init {
         settings.run {
@@ -35,6 +54,8 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
         }
 
         webChromeClient = WebChromeClient()
+
+        addJavascriptInterface(BridgeEntry(), PaymentBridge.ENTRY_NAME)
     }
 
     override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
@@ -56,13 +77,9 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
         onPageFinished: WebView.() -> Unit,
         shouldOverrideUrlLoading: Uri?.() -> Boolean
     ) {
-        val host = if (domain.isNullOrBlank()) {
-            "https://appassets.androidplatform.net"
-        } else {
-            "https://$domain"
-        }
-
+        val host = baseUrl(domain)
         val htmlFileUrl = "${host}/assets/$htmlFileName"
+        val bridge = openBridge(host)
 
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
@@ -84,6 +101,10 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
                 view: WebView?,
                 request: WebResourceRequest?
             ): WebResourceResponse? {
+                if (request?.isForMainFrame == true && request.url.toString() == htmlFileUrl) {
+                    return htmlResponse(bridge.addScript(readAsset(htmlFileName)))
+                }
+
                 return request?.url?.let {
                     assetLoader.shouldInterceptRequest(it)
                 } ?: super.shouldInterceptRequest(view, request)
@@ -101,23 +122,19 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
     }
 
     fun loadHtml(html: String, domain: String? = null) {
-        if (domain.isNullOrBlank()) {
-            loadData(
-                Base64.encodeToString(html.toByteArray(), Base64.NO_PADDING),
-                "text/html",
-                "base64"
-            )
-        } else {
-            val baseUrl = "https://$domain"
+        val baseUrl = baseUrl(domain)
 
-            loadDataWithBaseURL(
-                baseUrl,
-                html,
-                "text/html; charset=utf-8",
-                "utf-8",
-                baseUrl
-            )
-        }
+        loadDataWithBaseURL(
+            baseUrl,
+            openBridge(baseUrl).addScript(html),
+            "text/html; charset=utf-8",
+            "utf-8",
+            baseUrl
+        )
+    }
+
+    internal fun loadAsset(htmlFileName: String) {
+        loadHtml(readAsset(htmlFileName))
     }
 
     internal fun setHeight(heightPx: Float?) {
@@ -134,5 +151,40 @@ class PaymentWebView(context: Context, attrs: AttributeSet? = null) : WebView(co
                 }
             }
         }
+    }
+
+    private inner class BridgeEntry {
+        @JavascriptInterface
+        fun invoke(token: String?, target: String?, method: String?, arguments: String?) {
+            bridge?.receive(token, target, method, arguments) {
+                mainThread.read { Uri.parse(url.orEmpty()).toBridgeOrigin() }
+            }
+        }
+    }
+
+    private fun baseUrl(domain: String?): String {
+        return if (domain.isNullOrBlank()) DEFAULT_BASE_URL else "https://$domain"
+    }
+
+    private fun openBridge(baseUrl: String): PaymentBridge {
+        return PaymentBridge(newToken(), Uri.parse(baseUrl).toBridgeOrigin(), bridgeObjects)
+            .also { bridge = it }
+    }
+
+    private fun newToken(): String {
+        return ByteArray(32).also { SecureRandom().nextBytes(it) }
+            .joinToString("") { "%02x".format(it) }
+    }
+
+    private fun readAsset(fileName: String): String {
+        return context.assets.open(fileName).bufferedReader().use { it.readText() }
+    }
+
+    private fun htmlResponse(html: String): WebResourceResponse {
+        return WebResourceResponse("text/html", "utf-8", html.byteInputStream())
+    }
+
+    private fun Uri.toBridgeOrigin(): BridgeOrigin {
+        return BridgeOrigin(scheme, host, port)
     }
 }

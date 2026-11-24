@@ -11,6 +11,7 @@ import android.webkit.ValueCallback
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
+import com.tosspayments.paymentsdk.interfaces.BridgeObject
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
 import com.tosspayments.paymentsdk.model.PaymentWidgetStatusListener
 import com.tosspayments.paymentsdk.model.TossPaymentResult
@@ -118,6 +119,10 @@ sealed class PaymentWidgetContainer(context: Context, attrs: AttributeSet? = nul
             javascriptInterface,
             INTERFACE_NAME_WIDGET
         )
+    }
+
+    internal fun setBridgeMethods(methods: Map<String, (List<String?>) -> Unit>) {
+        paymentWebView.bridgeObjects = listOf(BridgeObject(INTERFACE_NAME_WIDGET, methods))
     }
 
     internal fun addPaymentWidgetStatusListener(statusListener: PaymentWidgetStatusListener?) {
