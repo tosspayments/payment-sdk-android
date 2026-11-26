@@ -5,13 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.tosspayments.paymentsdk.R
-import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.BridgeObject
+import com.tosspayments.paymentsdk.interfaces.textBridgeMethod
 import com.tosspayments.paymentsdk.model.Constants
 import com.tosspayments.paymentsdk.view.PaymentWebView
 import com.tosspayments.paymentsdk.view.PaymentWidgetContainer
@@ -48,19 +48,12 @@ internal class TossPaymentsWebActivity : AppCompatActivity() {
 
     private fun initViews() {
         webView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-            addJavascriptInterface(object : PaymentJavascriptInterface {
-                @JavascriptInterface
-                fun success(response: String) {
-                    handleSuccessResponse(response)
-                }
-            }, PaymentWidgetContainer.INTERFACE_NAME_WIDGET)
+            val methods = mapOf(textBridgeMethod("success") { handleSuccessResponse(it) })
 
-            addJavascriptInterface(object : PaymentJavascriptInterface {
-                @JavascriptInterface
-                fun success(response: String) {
-                    handleSuccessResponse(response)
-                }
-            }, PaymentWebView.INTERFACE_NAME_PAYMENT)
+            bridgeObjects = listOf(
+                BridgeObject(PaymentWidgetContainer.INTERFACE_NAME_WIDGET, methods),
+                BridgeObject(PaymentWebView.INTERFACE_NAME_PAYMENT, methods)
+            )
         }
     }
 

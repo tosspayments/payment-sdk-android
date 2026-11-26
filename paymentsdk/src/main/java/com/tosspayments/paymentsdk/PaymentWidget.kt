@@ -4,12 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.webkit.JavascriptInterface
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.tosspayments.paymentsdk.activity.TossPaymentsWebActivity
 import com.tosspayments.paymentsdk.interfaces.PaymentWidgetJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.errorBridgeMethod
+import com.tosspayments.paymentsdk.interfaces.textBridgeMethod
 import com.tosspayments.paymentsdk.model.*
 import com.tosspayments.paymentsdk.view.Agreement
 import com.tosspayments.paymentsdk.view.PaymentMethod
@@ -87,29 +88,23 @@ class PaymentWidget(
         }
     }
 
-    private val methodWidgetJavascriptInterface
-        get() = object : PaymentWidgetJavascriptInterface(methodWidget, messageEventHandler) {
-            @JavascriptInterface
-            fun requestPayments(html: String) {
+    private val methodWidgetBridgeMethods: Map<String, (List<String?>) -> Unit>
+        get() = mapOf(
+            messageBridgeMethod(methodWidget),
+            textBridgeMethod("requestPayments") { html ->
                 methodWidget?.let {
                     handlePaymentDom(it.context, it.orderId, html)
                 }
-            }
-
-            @JavascriptInterface
-            fun requestHTML(html: String) {
+            },
+            textBridgeMethod("requestHTML") { html ->
                 methodWidget?.context?.let {
                     htmlRequestActivityResult.launch(
                         TossPaymentsWebActivity.getIntent(it, domain, html)
                     )
                 }
-            }
-
-            @JavascriptInterface
-            fun error(errorCode: String, message: String, orderId: String?) {
-                methodWidget?.onFail(TossPaymentResult.Fail(errorCode, message, orderId))
-            }
-        }
+            },
+            errorBridgeMethod { methodWidget?.onFail(it) }
+        )
 
     private var methodWidget: PaymentMethod? = null
     private var agreementWidget: Agreement? = null
@@ -172,7 +167,7 @@ class PaymentWidget(
             addPaymentWidgetStatusListener(paymentWidgetStatusListener)
         }
 
-        methodWidget?.addJavascriptInterface(methodWidgetJavascriptInterface)
+        methodWidget?.setBridgeMethods(methodWidgetBridgeMethods)
 
         method.renderPaymentMethods(
             clientKey,
@@ -256,7 +251,7 @@ class PaymentWidget(
         }
 
         agreement.apply {
-            addJavascriptInterface(PaymentWidgetJavascriptInterface(agreement, messageEventHandler))
+            setBridgeMethods(mapOf(messageBridgeMethod(agreement)))
         }.renderAgreement(clientKey, customerKey)
     }
 
@@ -313,5 +308,14 @@ class PaymentWidget(
         customerEmail: String? = null,
         customerName: String? = null
     ) {
+    }
+
+    private fun messageBridgeMethod(
+        widget: PaymentWidgetContainer?
+    ): Pair<String, (List<String?>) -> Unit> {
+        return textBridgeMethod(
+            "message",
+            PaymentWidgetJavascriptInterface(widget, messageEventHandler)::message
+        )
     }
 }

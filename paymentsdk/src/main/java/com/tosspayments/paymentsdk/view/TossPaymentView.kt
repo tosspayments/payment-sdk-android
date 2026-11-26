@@ -11,8 +11,9 @@ import android.webkit.*
 import android.widget.FrameLayout
 import com.tosspayments.paymentsdk.R
 import com.tosspayments.paymentsdk.extension.startSchemeIntent
-import com.tosspayments.paymentsdk.interfaces.PaymentJavascriptInterface
+import com.tosspayments.paymentsdk.interfaces.BridgeObject
 import com.tosspayments.paymentsdk.interfaces.TossPaymentCallback
+import com.tosspayments.paymentsdk.interfaces.errorBridgeMethod
 import com.tosspayments.paymentsdk.model.TossPaymentResult
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentInfo
 import com.tosspayments.paymentsdk.model.paymentinfo.TossPaymentMethod
@@ -133,20 +134,14 @@ class TossPaymentView(context: Context, attrs: AttributeSet? = null) :
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tosspayment, this, true).run {
             paymentWebView = findViewById<PaymentWebView>(R.id.webview_payment).apply {
-                addJavascriptInterface(object : PaymentJavascriptInterface {
-                    @JavascriptInterface
-                    fun error(errorCode: String, message: String, orderId: String?) {
-                        callback?.onFailed(
-                            TossPaymentResult.Fail(
-                                errorCode = errorCode,
-                                errorMessage = message,
-                                orderId = orderId
-                            )
-                        )
-                    }
-                }, PaymentWebView.INTERFACE_NAME_PAYMENT)
+                bridgeObjects = listOf(
+                    BridgeObject(
+                        PaymentWebView.INTERFACE_NAME_PAYMENT,
+                        mapOf(errorBridgeMethod { callback?.onFailed(it) })
+                    )
+                )
 
-                loadUrl("file:///android_asset/tosspayment.html")
+                loadAsset("tosspayment.html")
             }
         }
     }
